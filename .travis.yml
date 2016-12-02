@@ -1,13 +1,15 @@
 language: go
-env:
-- GOOS=plan9
-- GOOS=linux
-- GOOS=darwin
 go:
   - 1.7
   - tip
 go_import_path: bldy.build/bldy
+before_install:
+  - go get github.com/mitchellh/gox
+  - go get github.com/tcnksm/ghr
 install:
   - go get -v -t -d bldy.build/bldy
 script:
   - go get -v bldy.build/bldy
+after_success:
+  - cd "$GOPATH/src/bldy.build/bldy"
+  - ./release.sh
