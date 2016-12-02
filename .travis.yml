@@ -1,0 +1,13 @@
+language: go
+env:
+- GOOS=plan9
+- GOOS=linux
+- GOOS=darwin
+go:
+  - 1.7
+  - tip
+go_import_path: bldy.build/bldy
+install:
+  - go get -v -t -d bldy.build/bldy
+script:
+  - go get -v bldy.build/bldy
