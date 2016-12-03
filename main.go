@@ -11,7 +11,7 @@ import (
 	"os/signal"
 	"time"
 
-	"bldy.build/build"
+	"bldy.build/bldy/tap"
 	"bldy.build/build/builder"
 
 	"runtime"
@@ -37,7 +37,8 @@ If you are in a subfoler we will traverse the parent folders until we hit a .git
 `
 )
 var (
-	progressbar = flag.Bool("p", false, "Show a progress bar (note: it can hide errors)")
+	disp    = flag.String("d", "tap", "only available display is tap currently")
+	display Display
 )
 
 func main() {
@@ -48,6 +49,11 @@ func main() {
 		printUsage()
 	}
 	target := flag.Args()[0]
+
+	switch *disp {
+	case "tap":
+		display = tap.New()
+	}
 	switch target {
 	case "version":
 		version()
@@ -80,13 +86,7 @@ func version() {
 	fmt.Printf("Build %s", buildVer)
 	os.Exit(0)
 }
-func doneMessage(s string) {
-	fmt.Printf("[%s] %s\n", " OK ", s)
-}
-func failMessage(s string) {
-	fmt.Printf("[ %s ] %s\n", "FAIL", s)
 
-}
 func hash(t string) {
 	c := builder.New()
 
@@ -122,7 +122,6 @@ func execute(t string) {
 	if c.Root == nil {
 		log.Fatal("We couldn't find the root")
 	}
-
 	cpus := int(float32(runtime.NumCPU()) * 1.25)
 
 	done := make(chan interface{})
@@ -137,19 +136,18 @@ func execute(t string) {
 		os.Exit(1)
 	}()
 
-	term := NewTap(cpus)
-	go term.Display(c.Updates, cpus)
+	go display.Display(c.Updates, cpus)
 
 	go c.Execute(time.Second, cpus)
 	for {
 		select {
 		case done := <-c.Done:
 			if done.IsRoot {
-				term.Finish()
+				display.Finish()
 				os.Exit(0)
 			}
 		case err := <-c.Error:
-			term.Stop()
+			display.Cancel()
 			<-done
 
 			log.Fatal(err)
@@ -160,33 +158,4 @@ func execute(t string) {
 
 	}
 
-}
-
-func makeGraph(n *builder.Node, g *Graph) {
-	if _, exists := g.Targets[n.Url.String()]; !exists {
-		g.Targets[n.Url.String()] = n.Target
-		g.Outputs[n.Url.String()] = n.Output
-		for _, c := range n.Children {
-			makeGraph(c, g)
-		}
-	}
-
-}
-
-type Graph struct {
-	Root    *builder.Node
-	Outputs map[string]string
-	Targets map[string]build.Target
-}
-
-func compare(a, b []byte) bool {
-	if len(a) != len(b) {
-		return false
-	}
-	for i, c := range a {
-		if c != b[i] {
-			return false
-		}
-	}
-	return true
 }
