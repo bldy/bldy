@@ -124,8 +124,6 @@ func execute(t string) {
 	}
 	cpus := int(float32(runtime.NumCPU()) * 1.25)
 
-	done := make(chan interface{})
-
 	// If the app hangs, there is a log.
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, os.Interrupt)
@@ -148,9 +146,8 @@ func execute(t string) {
 			}
 		case err := <-c.Error:
 			display.Cancel()
-			<-done
 
-			log.Fatal(err)
+			fmt.Println(err)
 			os.Exit(1)
 		case <-c.Timeout:
 			log.Println("your build has timed out")

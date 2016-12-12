@@ -8,7 +8,6 @@ package tap
 
 import (
 	"fmt"
-	"log"
 	"time"
 
 	"bldy.build/build/builder"
@@ -58,7 +57,9 @@ func (t *Tap) Display(updates chan *builder.Node, workers int) {
 	}
 }
 func (t *Tap) Cancel() {
-	log.Println("cancel")
+	fmt.Println()
+	fmt.Printf("not ok\t(%s) \n", time.Since(t.start))
+	fmt.Printf("======")
 	t.done <- struct{}{}
 }
 
