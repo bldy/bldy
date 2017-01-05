@@ -9,10 +9,12 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"time"
 
 	"bldy.build/bldy/tap"
 	"bldy.build/build/builder"
+	"bldy.build/build/util"
 
 	"runtime"
 
@@ -59,11 +61,13 @@ func main() {
 		version()
 		return
 	case "force":
-		os.RemoveAll("/tmp/build")
+		os.RemoveAll(builder.BLDYCACHE)
 		if len(flag.Args()) >= 2 {
 			target = flag.Args()[1]
 			execute(target)
 		}
+	case "clean":
+		clean(target)
 	case "query":
 		target = flag.Args()[1]
 		query(target)
@@ -73,7 +77,7 @@ func main() {
 	default:
 		execute(target)
 	}
-}
+}  
 func progress() {
 	fmt.Println(runtime.NumCPU())
 }
@@ -108,8 +112,22 @@ func query(t string) {
 	fmt.Println(prettyprint.AsJSON(c.Add(t).Target))
 }
 
-func execute(t string) {
+func clean(t string) {
+	c := builder.New()
 
+	if c.ProjectPath == "" {
+		fmt.Fprintf(os.Stderr, "You need to be in a git project.\n\n")
+		printUsage()
+	}
+	target := c.Add(t).Target
+	for file, _ := range target.Installs() {
+		if err := os.Remove(filepath.Join(util.BuildOut(), file)); err != nil {
+			log.Println(err)
+		}
+	}
+}
+
+func execute(t string) {
 	c := builder.New()
 
 	if c.ProjectPath == "" {
