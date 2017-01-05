@@ -58,7 +58,7 @@ func main() {
 	case "version":
 		version()
 		return
-	case "nuke":
+	case "force":
 		os.RemoveAll("/tmp/build")
 		if len(flag.Args()) >= 2 {
 			target = flag.Args()[1]

@@ -13,7 +13,7 @@ doing the work again.
 
 bldy cli interface is structured like so
 
-	bldy [nuke] [-p=tap] url
+	bldy [force] [-p=tap] url
 
 a bldy url is consists of two parts, package and target
 
@@ -29,10 +29,9 @@ is the package relative to the root of the folder and the : seperated bit
 
 is the target in that package that you want to compile.
 
-If you want to kill the cache folder you can use the nuke argument
-to delete the cache folder like so
+To force a full rebuild, just run bldy with force:
 
-	bldy nuke //:harvey
+	bldy force //:harvey
 
 
 
