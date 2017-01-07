@@ -71,13 +71,16 @@ func main() {
 	case "query":
 		target = flag.Args()[1]
 		query(target)
+	case "installs":
+		target = flag.Args()[1]
+		installs(target)
 	case "hash":
 		target = flag.Args()[1]
 		hash(target)
 	default:
 		execute(target)
 	}
-}  
+}
 func progress() {
 	fmt.Println(runtime.NumCPU())
 }
@@ -111,7 +114,16 @@ func query(t string) {
 	}
 	fmt.Println(prettyprint.AsJSON(c.Add(t).Target))
 }
+func installs(t string) {
 
+	c := builder.New()
+
+	if c.ProjectPath == "" {
+		fmt.Fprintf(os.Stderr, "You need to be in a git project.\n\n")
+		printUsage()
+	}
+	fmt.Println(prettyprint.AsJSON(c.Add(t).Target.Installs()))
+}
 func clean(t string) {
 	c := builder.New()
 
