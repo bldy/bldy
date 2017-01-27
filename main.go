@@ -14,7 +14,7 @@ import (
 
 	"bldy.build/bldy/tap"
 	"bldy.build/build/builder"
-	"bldy.build/build/util"
+	"bldy.build/build/project"
 
 	"runtime"
 
@@ -102,6 +102,7 @@ func hash(t string) {
 		printUsage()
 	}
 	fmt.Printf("%x\n", c.Add(t).HashNode())
+
 }
 
 func query(t string) {
@@ -133,7 +134,7 @@ func clean(t string) {
 	}
 	target := c.Add(t).Target
 	for file, _ := range target.Installs() {
-		if err := os.Remove(filepath.Join(util.BuildOut(), file)); err != nil {
+		if err := os.Remove(filepath.Join(project.BuildOut(), file)); err != nil {
 			log.Println(err)
 		}
 	}
