@@ -57,10 +57,11 @@ func (t *Tap) Display(updates chan *builder.Node, workers int) {
 	}
 }
 func (t *Tap) Cancel() {
+	t.done <- struct{}{}
 	fmt.Println()
 	fmt.Printf("not ok\t(%s) \n", time.Since(t.start))
-	fmt.Printf("======")
-	t.done <- struct{}{}
+	fmt.Println()
+	fmt.Println("======")
 }
 
 func (t *Tap) Finish() {

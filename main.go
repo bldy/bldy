@@ -41,6 +41,8 @@ If you are in a subfoler we will traverse the parent folders until we hit a .git
 var (
 	disp    = flag.String("d", "tap", "only available display is tap currently")
 	display Display
+	l       = log.New(os.Stdout, "bldy: ", 0)
+	e       = log.New(os.Stderr, "bldy: ", 0)
 )
 
 func main() {
@@ -67,30 +69,34 @@ func main() {
 			execute(target)
 		}
 	case "clean":
+		target = flag.Args()[1]
 		clean(target)
+		return
 	case "query":
 		target = flag.Args()[1]
 		query(target)
+		return
 	case "installs":
 		target = flag.Args()[1]
 		installs(target)
+		return
 	case "hash":
 		target = flag.Args()[1]
 		hash(target)
+
+		return
 	default:
 		execute(target)
 	}
 }
-func progress() {
-	fmt.Println(runtime.NumCPU())
-}
+
 func printUsage() {
 	fmt.Fprintf(os.Stderr, usage)
 	os.Exit(1)
 
 }
 func version() {
-	fmt.Printf("Build %s", buildVer)
+	l.Printf("Build %s", buildVer)
 	os.Exit(0)
 }
 
@@ -98,44 +104,41 @@ func hash(t string) {
 	c := builder.New()
 
 	if c.ProjectPath == "" {
-		fmt.Fprintf(os.Stderr, "You need to be in a git project.\n\n")
+		e.Println("You need to be in a git project.")
 		printUsage()
 	}
 	fmt.Printf("%x\n", c.Add(t).HashNode())
-
 }
 
 func query(t string) {
-
 	c := builder.New()
 
 	if c.ProjectPath == "" {
-		fmt.Fprintf(os.Stderr, "You need to be in a git project.\n\n")
+		e.Println("You need to be in a git project.")
 		printUsage()
 	}
-	fmt.Println(prettyprint.AsJSON(c.Add(t).Target))
+	l.Println(prettyprint.AsJSON(c.Add(t).Target))
 }
 func installs(t string) {
-
 	c := builder.New()
 
 	if c.ProjectPath == "" {
-		fmt.Fprintf(os.Stderr, "You need to be in a git project.\n\n")
+		e.Println("You need to be in a git project.")
 		printUsage()
 	}
-	fmt.Println(prettyprint.AsJSON(c.Add(t).Target.Installs()))
+	l.Println(prettyprint.AsJSON(c.Add(t).Target.Installs()))
 }
 func clean(t string) {
 	c := builder.New()
 
 	if c.ProjectPath == "" {
-		fmt.Fprintf(os.Stderr, "You need to be in a git project.\n\n")
+		e.Println("You need to be in a git project.")
 		printUsage()
 	}
 	target := c.Add(t).Target
 	for file, _ := range target.Installs() {
 		if err := os.Remove(filepath.Join(project.BuildOut(), file)); err != nil {
-			log.Println(err)
+			l.Println(err)
 		}
 	}
 }
@@ -144,14 +147,14 @@ func execute(t string) {
 	c := builder.New()
 
 	if c.ProjectPath == "" {
-		fmt.Fprintf(os.Stderr, "You need to be in a git project.\n\n")
+		e.Println("You need to be in a git project.")
 		printUsage()
 	}
 	c.Root = c.Add(t)
 	c.Root.IsRoot = true
 
 	if c.Root == nil {
-		log.Fatal("We couldn't find the root")
+		l.Fatal("We couldn't find the root")
 	}
 	cpus := int(float32(runtime.NumCPU()) * 1.25)
 
