@@ -4,10 +4,10 @@
 
 package main
 
-import "bldy.build/build/builder"
+import "bldy.build/build/graph"
 
 type Display interface {
-	Display(chan *builder.Node, int)
+	Display(chan *graph.Node, int)
 	Cancel()
 	Finish()
 }

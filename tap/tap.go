@@ -10,24 +10,25 @@ import (
 	"fmt"
 	"time"
 
-	"bldy.build/build/builder"
+	"bldy.build/build"
+	"bldy.build/build/graph"
 )
 
 type Tap struct {
 	start   time.Time
 	done    chan struct{}
-	workers map[string]*builder.Node
+	workers map[string]*graph.Node
 	cached  int
 	fresh   int
 }
 
 func New() *Tap {
 	return &Tap{
-		workers: make(map[string]*builder.Node),
+		workers: make(map[string]*graph.Node),
 		done:    make(chan struct{}),
 	}
 }
-func (t *Tap) Display(updates chan *builder.Node, workers int) {
+func (t *Tap) Display(updates chan *graph.Node, workers int) {
 
 	t.start = time.Now()
 
@@ -38,19 +39,19 @@ func (t *Tap) Display(updates chan *builder.Node, workers int) {
 		case u := <-updates:
 			x := ""
 			switch u.Status {
-			case builder.Success:
+			case build.Success:
 				x += "ok"
-			case builder.Fail:
+			case build.Fail:
 				x += "not ok"
 			default:
 				continue
 			}
 			if u.Cached {
 				t.cached++
-				fmt.Printf("%s\t%s\t(cached)\n", x, u.Url.String())
+				fmt.Printf("%s\t%s\t(cached)\n", x, u.URL.String())
 			} else {
 				t.fresh++
-				fmt.Printf("%s\t%s\t(%s)\n", x, u.Url.String(), time.Duration(u.End-u.Start))
+				fmt.Printf("%s\t%s\t(%s)\n", x, u.URL.String(), time.Duration(u.End-u.Start))
 			}
 
 		}

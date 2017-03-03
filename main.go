@@ -14,6 +14,7 @@ import (
 
 	"bldy.build/bldy/tap"
 	"bldy.build/build/builder"
+	"bldy.build/build/graph"
 	"bldy.build/build/project"
 
 	"runtime"
@@ -101,41 +102,57 @@ func version() {
 }
 
 func hash(t string) {
-	c := builder.New()
+	wd, err := os.Getwd()
+	if err != nil {
+		l.Fatal(err)
+	}
+	g := graph.New(wd, t)
 
-	if c.ProjectPath == "" {
+	if project.Root() == "" {
 		e.Println("You need to be in a git project.")
 		printUsage()
 	}
-	fmt.Printf("%x\n", c.Add(t).HashNode())
+	fmt.Printf("%x\n", g.Root.HashNode())
 }
 
 func query(t string) {
-	c := builder.New()
+	wd, err := os.Getwd()
+	if err != nil {
+		l.Fatal(err)
+	}
+	g := graph.New(wd, t)
 
-	if c.ProjectPath == "" {
+	if project.Root() == "" {
 		e.Println("You need to be in a git project.")
 		printUsage()
 	}
-	l.Println(prettyprint.AsJSON(c.Add(t).Target))
+	l.Println(prettyprint.AsJSON(g.Root.Target))
 }
 func installs(t string) {
-	c := builder.New()
+	wd, err := os.Getwd()
+	if err != nil {
+		l.Fatal(err)
+	}
+	g := graph.New(wd, t)
 
-	if c.ProjectPath == "" {
+	if project.Root() == "" {
 		e.Println("You need to be in a git project.")
 		printUsage()
 	}
-	l.Println(prettyprint.AsJSON(c.Add(t).Target.Installs()))
+	l.Println(prettyprint.AsJSON(g.Root.Target.Installs()))
 }
 func clean(t string) {
-	c := builder.New()
+	wd, err := os.Getwd()
+	if err != nil {
+		l.Fatal(err)
+	}
+	g := graph.New(wd, t)
 
-	if c.ProjectPath == "" {
+	if project.Root() == "" {
 		e.Println("You need to be in a git project.")
 		printUsage()
 	}
-	target := c.Add(t).Target
+	target := g.Root.Target
 	for file, _ := range target.Installs() {
 		if err := os.Remove(filepath.Join(project.BuildOut(), file)); err != nil {
 			l.Println(err)
@@ -144,18 +161,21 @@ func clean(t string) {
 }
 
 func execute(t string) {
-	c := builder.New()
+	wd, err := os.Getwd()
+	if err != nil {
+		l.Fatal(err)
+	}
+	g := graph.New(wd, t)
 
-	if c.ProjectPath == "" {
+	if project.Root() == "" {
 		e.Println("You need to be in a git project.")
 		printUsage()
 	}
-	c.Root = c.Add(t)
-	c.Root.IsRoot = true
 
-	if c.Root == nil {
+	if g.Root == nil {
 		l.Fatal("We couldn't find the root")
 	}
+	b := builder.New(g)
 	cpus := int(float32(runtime.NumCPU()) * 1.25)
 
 	// If the app hangs, there is a log.
@@ -164,26 +184,26 @@ func execute(t string) {
 	go func() {
 		<-sigs
 		f, _ := os.Create("/tmp/build-crash-log.json")
-		fmt.Fprintf(f, prettyprint.AsJSON(c.Root))
+		fmt.Fprintf(f, prettyprint.AsJSON(g.Root))
 		os.Exit(1)
 	}()
 
-	go display.Display(c.Updates, cpus)
+	go display.Display(b.Updates, cpus)
 
-	go c.Execute(time.Second, cpus)
+	go b.Execute(time.Second, cpus)
 	for {
 		select {
-		case done := <-c.Done:
+		case done := <-b.Done:
 			if done.IsRoot {
 				display.Finish()
 				os.Exit(0)
 			}
-		case err := <-c.Error:
+		case err := <-b.Error:
 			display.Cancel()
 
 			fmt.Println(err)
 			os.Exit(1)
-		case <-c.Timeout:
+		case <-b.Timeout:
 			log.Println("your build has timed out")
 		}
 
