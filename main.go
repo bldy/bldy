@@ -5,12 +5,12 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
 	"os/signal"
 	"path/filepath"
-	"time"
 
 	"bldy.build/bldy/tap"
 	"bldy.build/build/builder"
@@ -190,7 +190,10 @@ func execute(t string) {
 
 	go display.Display(b.Updates, cpus)
 
-	go b.Execute(time.Second, cpus)
+	ctx := context.Background()
+	ctx, cancel := context.WithCancel(ctx)
+
+	go b.Execute(ctx, cpus)
 	for {
 		select {
 		case done := <-b.Done:
@@ -199,6 +202,7 @@ func execute(t string) {
 				os.Exit(0)
 			}
 		case err := <-b.Error:
+			cancel()
 			display.Cancel()
 
 			fmt.Println(err)
