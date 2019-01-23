@@ -8,9 +8,10 @@ import (
 	"os"
 	"runtime"
 
+	"bldy.build/build/url"
+
 	"bldy.build/build/builder"
 	"bldy.build/build/graph"
-	"bldy.build/build/label"
 	"github.com/google/subcommands"
 )
 
@@ -34,7 +35,7 @@ func (b *BuildCmd) Execute(ctx context.Context, f *flag.FlagSet, args ...interfa
 	if len(args) != 1 {
 		return subcommands.ExitUsageError
 	}
-	l, ok := args[0].(label.Label)
+	l, ok := args[0].(*url.URL)
 	if !ok {
 		return subcommands.ExitUsageError
 	}

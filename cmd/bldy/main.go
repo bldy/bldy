@@ -5,11 +5,11 @@ package main // import "bldy.build/build/cmd/bldy"
 import (
 	"context"
 	"flag"
+	"net/url"
 	"os"
 
 	"bldy.build/build/cmd/build"
 	"bldy.build/build/cmd/query"
-	"bldy.build/build/label"
 	"github.com/google/subcommands"
 )
 
@@ -23,8 +23,8 @@ func main() {
 
 	flag.Parse()
 	ctx := context.Background()
-	if l, err := label.Parse(flag.Arg(1)); err == nil {
-		os.Exit(int(subcommands.Execute(ctx, l)))
+	if u, err := url.Parse(flag.Arg(1)); err == nil {
+		os.Exit(int(subcommands.Execute(ctx, u)))
 	} else {
 		os.Exit(int(subcommands.Execute(ctx)))
 	}

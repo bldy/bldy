@@ -7,8 +7,7 @@ package build
 
 import (
 	"bldy.build/build/executor"
-	"bldy.build/build/label"
-	"bldy.build/build/workspace"
+	"bldy.build/build/url"
 )
 
 //go:generate stringer -type=Status
@@ -32,24 +31,17 @@ const (
 	Building
 )
 
-var (
-	HostPlatform    = label.Label("@bldy//platforms:host")
-	DefaultPlatform = HostPlatform
-)
-
 // Rule defines the interface that rules must implement for becoming build targets.
 type Rule interface {
 	Name() string
-	Dependencies() []label.Label
+	Dependencies() []*url.URL
 	Outputs() []string
 	Hash() []byte
 	Build(*executor.Executor) error
-	Platform() label.Label
-	Workspace() workspace.Workspace
 }
 
 // VM seperate the parsing and evauluating targets logic from rest of bldy
 // so we can implement and use new grammars like jsonnet or go it self.
 type VM interface {
-	GetTarget(label.Label) (Rule, error)
+	GetTarget(url *url.URL) (Rule, error)
 }

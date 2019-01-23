@@ -5,10 +5,10 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"os"
+
+	"bldy.build/build/url"
 
 	"bldy.build/build/graph"
-	"bldy.build/build/label"
 	"github.com/google/subcommands"
 	"sevki.org/x/pretty"
 )
@@ -33,16 +33,12 @@ func (q *QueryCmd) Execute(ctx context.Context, f *flag.FlagSet, args ...interfa
 	if len(args) != 1 {
 		return subcommands.ExitUsageError
 	}
-	l, ok := args[0].(label.Label)
+	u, ok := args[0].(*url.URL)
 	if !ok {
 		return subcommands.ExitUsageError
 	}
-	wd, err := os.Getwd()
-	if err != nil {
-		fmt.Println(err.Error())
-		return 4
-	}
-	g, err := graph.New(wd, string(l))
+
+	g, err := graph.New(u)
 	if err != nil {
 		fmt.Println(err.Error())
 		return 4
@@ -70,16 +66,12 @@ func (q *HashCmd) Execute(ctx context.Context, f *flag.FlagSet, args ...interfac
 	if len(args) != 1 {
 		return subcommands.ExitUsageError
 	}
-	l, ok := args[0].(label.Label)
+	u, ok := args[0].(*url.URL)
 	if !ok {
 		return subcommands.ExitUsageError
 	}
-	wd, err := os.Getwd()
-	if err != nil {
-		fmt.Println(err.Error())
-		return 4
-	}
-	g, err := graph.New(wd, string(l))
+
+	g, err := graph.New(u)
 	if err != nil {
 		fmt.Println(err.Error())
 		return 4

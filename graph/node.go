@@ -5,11 +5,11 @@ import (
 	"sync"
 
 	"bldy.build/build"
-	"bldy.build/build/label"
+	"bldy.build/build/url"
 )
 
 // NewNode takes a label and a rule and returns it as a Graph Node
-func NewNode(l label.Label, t build.Rule) Node {
+func NewNode(u *url.URL, t build.Rule) Node {
 	return Node{
 		Target:        t,
 		Type:          fmt.Sprintf("%T", t)[1:],
@@ -18,7 +18,7 @@ func NewNode(l label.Label, t build.Rule) Node {
 		Once:          sync.Once{},
 		WG:            sync.WaitGroup{},
 		Status:        build.Pending,
-		Label:         l,
+		url:           u,
 		PriorityCount: -1,
 	}
 }
@@ -29,7 +29,7 @@ type Node struct {
 	Target        build.Rule `json:"-"`
 	Type          string
 	Parents       map[string]*Node `json:"-"`
-	Label         label.Label
+	url           *url.URL
 	Worker        string
 	PriorityCount int
 	WG            sync.WaitGroup
