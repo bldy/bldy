@@ -30,9 +30,10 @@ func New(u *url.URL) (*Graph, error) {
 
 // Graph represents a build graph
 type Graph struct {
-	Root  *Node
-	vm    build.VM
-	Nodes map[string]*Node
+	Root      *Node
+	vm        build.VM
+	Workspace string
+	Nodes     map[string]*Node
 }
 
 func (g *Graph) getTarget(u *url.URL) (n *Node) {

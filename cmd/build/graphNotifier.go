@@ -61,7 +61,7 @@ func (t *terminalNotifier) Update(n *graph.Node) {
 		graph += " "
 
 	}
-	fmt.Printf("%s %s\t(cached = %v\tstatus = %s\tworker = %d)\n", graph, n.Label.String(), n.Cached, n.Status, i+1)
+	fmt.Printf("%s %s\t(cached = %v\tstatus = %s\tworker = %d)\n", graph, n.ID, n.Cached, n.Status, i+1)
 
 	t.mut.Unlock()
 }

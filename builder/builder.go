@@ -74,7 +74,7 @@ func New(g *graph.Graph, c *Config, n Notifier) (b Builder) {
 	b.graph = g
 	b.notifier = n
 	if c.Fresh {
-		tmpDir, err := ioutil.TempDir("", fmt.Sprintf("bldy_tmp_%s_", g.Root.Label.Name()))
+		tmpDir, err := ioutil.TempDir("", fmt.Sprintf("bldy_tmp_%s_", g.Root.ID))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -83,12 +83,12 @@ func New(g *graph.Graph, c *Config, n Notifier) (b Builder) {
 		c.Cache = bldyCache()
 	}
 	if c.BuildOut == nil {
-		x := path.Join(g.Workspace().AbsPath(), "build_out")
+		x := path.Join(g.Workspace, "build_out")
 		c.BuildOut = &x
 	}
 
 	b.config = c
-	b.ProjectPath = g.Workspace().AbsPath()
+	b.ProjectPath = g.Workspace
 
 	return
 }
@@ -324,7 +324,7 @@ func (b *Builder) prepare(ctx context.Context, n *graph.Node) (namespace.Namespa
 		return nil, err
 	}
 	if ws, ok := ns.(namespace.Workspace); ok {
-		ws.MountWorkspace(n.Target.Workspace().AbsPath())
+		ws.MountWorkspace(n.Workspace)
 	}
 	if err := b.bindChildOutputs(n, ns); err != nil {
 		return nil, err
