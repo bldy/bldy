@@ -19,7 +19,7 @@ var (
 )
 
 // New returns a new build graph relatvie to the working directory
-func New(u *url.URL) (*Graph, error) {
+func New(u *url.URL, wd string) (*Graph, error) {
 	g := Graph{
 		Nodes: make(map[string]*Node),
 	}

@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"os"
 
 	"bldy.build/build/url"
 
@@ -33,12 +34,16 @@ func (q *QueryCmd) Execute(ctx context.Context, f *flag.FlagSet, args ...interfa
 	if len(args) != 1 {
 		return subcommands.ExitUsageError
 	}
-	u, ok := args[0].(*url.URL)
+	l, ok := args[0].(*url.URL)
 	if !ok {
 		return subcommands.ExitUsageError
 	}
-
-	g, err := graph.New(u)
+	wd, err := os.Getwd()
+	if err != nil {
+		fmt.Println(err.Error())
+		return 3
+	}
+	g, err := graph.New(l, wd)
 	if err != nil {
 		fmt.Println(err.Error())
 		return 4
@@ -66,12 +71,16 @@ func (q *HashCmd) Execute(ctx context.Context, f *flag.FlagSet, args ...interfac
 	if len(args) != 1 {
 		return subcommands.ExitUsageError
 	}
-	u, ok := args[0].(*url.URL)
+	l, ok := args[0].(*url.URL)
 	if !ok {
 		return subcommands.ExitUsageError
 	}
-
-	g, err := graph.New(u)
+	wd, err := os.Getwd()
+	if err != nil {
+		fmt.Println(err.Error())
+		return 3
+	}
+	g, err := graph.New(l, wd)
 	if err != nil {
 		fmt.Println(err.Error())
 		return 4

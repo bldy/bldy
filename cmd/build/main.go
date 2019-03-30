@@ -22,7 +22,7 @@ type BuildCmd struct {
 func (*BuildCmd) Name() string     { return "build" }
 func (*BuildCmd) Synopsis() string { return "builds a target" }
 func (*BuildCmd) Usage() string {
-	return `build //<package>:<name>
+	return `build src/libc#klibc
 Builds a target
 `
 }
@@ -44,7 +44,7 @@ func (b *BuildCmd) Execute(ctx context.Context, f *flag.FlagSet, args ...interfa
 		fmt.Println(err.Error())
 		return 3
 	}
-	g, err := graph.New(wd, string(l))
+	g, err := graph.New(l, wd)
 	if err != nil {
 		fmt.Println(err.Error())
 		return 4
