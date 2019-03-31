@@ -43,6 +43,12 @@ func TestEval(t *testing.T) {
 			wd:   path.Join(wd, "testdata"),
 			err:  nil,
 		},
+		{
+			name: "run",
+			url:  "run#run_test",
+			wd:   path.Join(wd, "testdata"),
+			err:  nil,
+		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {

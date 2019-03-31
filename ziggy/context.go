@@ -14,7 +14,7 @@ type Context struct {
 }
 
 func (ctx *Context) String() string        { panic("not implemented") }
-func (ctx *Context) Type() string          { panic("not implemented") }
+func (ctx *Context) Type() string          { return "build_context" }
 func (ctx *Context) Freeze()               { panic("not implemented") }
 func (ctx *Context) Truth() starlark.Bool  { panic("not implemented") }
 func (ctx *Context) Hash() (uint32, error) { panic("not implemented") }

@@ -10,6 +10,7 @@ import (
 	"bldy.build/build"
 	"bldy.build/build/url"
 	"go.starlark.net/starlarkstruct"
+	"sevki.org/x/pretty"
 
 	"github.com/pkg/errors"
 	"go.starlark.net/starlark"
@@ -46,10 +47,20 @@ func (pkg *Package) Eval() error {
 	thread := &starlark.Thread{
 		Name:  pkg.Name,
 		Print: func(_ *starlark.Thread, msg string) { log.Println(msg) },
+		Load: func(thread *starlark.Thread, module string) (starlark.StringDict, error) {
+			u, err := url.Parse(module)
+			if err != nil {
+				return nil, err
+			}
+			log.Println(pretty.JSON(u))
+
+			return nil, errors.New("")
+		},
 	}
 	predeclared := starlark.StringDict{
 		"rule":   starlark.NewBuiltin("rule", pkg.newRule),
 		"struct": starlark.NewBuiltin("struct", starlarkstruct.Make),
+		"module": starlark.NewBuiltin("module", starlarkstruct.MakeModule),
 	}
 	for _, file := range pkg.BuildFiles {
 		data, err := ioutil.ReadFile(file)
