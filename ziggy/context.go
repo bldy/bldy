@@ -1,31 +1,38 @@
 package ziggy
 
 import (
-	"path/filepath"
+	"fmt"
 
-	"bldy.build/build/url"
-	"github.com/pkg/errors"
+	"bldy.build/build"
+	"go.starlark.net/starlark"
 )
 
 type Context struct {
-	BLDYARCH string // target architecture
-	BLDYOS   string // target operating system
+	build.Context
 
-	protocol string
- 
-	ReadFile func(path string) ([]byte, error)
+	name string
 }
 
-func (ctx *Context) Import(u *url.URL) (*Package, error) {
-	_, dir := filepath.Split(u.Path)
-	files, err := filepath.Glob(filepath.Join(u.Path, "*.bldy"))
-	if err != nil {
-		return nil, errors.Wrap(err, "import")
+func (ctx *Context) String() string        { panic("not implemented") }
+func (ctx *Context) Type() string          { panic("not implemented") }
+func (ctx *Context) Freeze()               { panic("not implemented") }
+func (ctx *Context) Truth() starlark.Bool  { panic("not implemented") }
+func (ctx *Context) Hash() (uint32, error) { panic("not implemented") }
+func (ctx *Context) AttrNames() []string   { panic("not implemented") }
+func (ctx *Context) Attr(name string) (starlark.Value, error) {
+	switch name {
+	case "name":
+		return starlark.String(ctx.name), nil
+	case "os":
+		return starlark.String(ctx.Context.BLDYOS), nil
+	case "arch":
+		return starlark.String(ctx.Context.BLDYARCH), nil
+	default:
+		return nil, fmt.Errorf("%q is not a ctx attributw", name)
 	}
-	return &Package{
-		Dir:        u.Path,
-		Name:       dir,
-		BuildFiles: files,
-		ctx:        ctx,
-	}, nil
+}
+
+func newContext(ctx build.Context, name string) starlark.Value {
+	c := &Context{ctx, name}
+	return c
 }

@@ -4,11 +4,9 @@ package ziggy
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path"
-	"runtime"
 
 	"bldy.build/build/project"
 	"github.com/pkg/errors"
@@ -19,22 +17,17 @@ import (
 	"sevki.org/x/pretty"
 )
 
-var DefaultContext = Context{
-	BLDYARCH: runtime.GOARCH,
-	BLDYOS:   runtime.GOOS,
-	ReadFile: ioutil.ReadFile,
-}
-
 type ziggy struct {
 	wd      string
-	ctx     Context
+	ctx     build.Context
 	rules   map[string]build.Rule
 	globals starlark.StringDict
 }
 
-func New(wd string) build.VM {
+func New(wd string, ctx build.Context) build.VM {
+
 	return &ziggy{
-		ctx: DefaultContext,
+		ctx: ctx,
 		wd:  wd,
 	}
 }
@@ -43,14 +36,14 @@ func (z *ziggy) GetTarget(u *url.URL) (build.Rule, error) {
 	if err := z.normalzieURL(u); err != nil {
 		return nil, errors.Wrap(err, "get target")
 	}
-	pkg, err := z.ctx.Import(u)
+	pkg, err := z.Load(u)
 	if err != nil {
 		return nil, errors.Wrap(err, "get target")
 	}
 	if err := pkg.Eval(); err != nil {
 		return nil, errors.Wrap(err, "get target")
 	}
-	if r, ok := z.rules[u.String()]; ok {
+	if r, ok := pkg.rules[u.Fragment]; ok {
 		return r, nil
 	}
 

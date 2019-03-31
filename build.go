@@ -6,9 +6,22 @@
 package build
 
 import (
+	"runtime"
+
 	"bldy.build/build/executor"
 	"bldy.build/build/url"
 )
+
+type Context struct {
+	BLDYARCH string // target architecture
+	BLDYOS   string // target operating system
+
+}
+
+var DefaultContext = Context{
+	BLDYARCH: runtime.GOARCH,
+	BLDYOS:   runtime.GOOS,
+}
 
 //go:generate stringer -type=Status
 // Status represents a nodes status.

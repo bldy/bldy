@@ -5,6 +5,7 @@ import (
 	"path"
 	"testing"
 
+	"bldy.build/build"
 	"bldy.build/build/url"
 )
 
@@ -14,7 +15,7 @@ func TestDoesntExist(t *testing.T) {
 		t.Log(err)
 		t.Fail()
 	}
-	z := New("")
+	z := New("", build.DefaultContext)
 	r, err := z.GetTarget(u)
 	if err == nil || r != nil {
 		t.Log("did not expwct a target")
@@ -30,17 +31,22 @@ func TestEval(t *testing.T) {
 		wd   string
 		err  error
 	}{
-
 		{
 			name: "empty",
 			url:  "empty",
 			wd:   path.Join(wd, "testdata"),
 			err:  nil,
 		},
+		{
+			name: "context_tester",
+			url:  "ctx#context_tester",
+			wd:   path.Join(wd, "testdata"),
+			err:  nil,
+		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			vm := New(test.wd)
+			vm := New(test.wd, build.DefaultContext)
 			u, _ := url.Parse(test.url)
 			target, err := vm.GetTarget(u)
 			if err != test.err {
