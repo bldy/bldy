@@ -6,7 +6,7 @@ require (
 	github.com/google/subcommands v0.0.0-20181012225330-46f0354f6315
 	github.com/pkg/errors v0.8.1
 	github.com/vaughan0/go-ini v0.0.0-20130923145212-a98ad7ee00ec
-	go.starlark.net v0.0.0-20190318154116-885f8b82a921
+	go.starlark.net v0.0.0-20190402030956-cb523dafc375
 	sevki.org/pqueue v0.0.0-20180411183211-725269ba7143
 	sevki.org/x v1.0.0
 )

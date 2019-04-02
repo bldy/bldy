@@ -3,8 +3,6 @@
 package ziggy
 
 import (
-	"fmt"
-	"log"
 	"os"
 	"path"
 
@@ -14,7 +12,6 @@ import (
 	"bldy.build/build"
 	"bldy.build/build/url"
 	"go.starlark.net/starlark"
-	"sevki.org/x/pretty"
 )
 
 type ziggy struct {
@@ -25,7 +22,6 @@ type ziggy struct {
 }
 
 func New(wd string, ctx build.Context) build.VM {
-
 	return &ziggy{
 		ctx: ctx,
 		wd:  wd,
@@ -36,18 +32,14 @@ func (z *ziggy) GetTarget(u *url.URL) (build.Rule, error) {
 	if err := z.normalzieURL(u); err != nil {
 		return nil, errors.Wrap(err, "get target")
 	}
-	pkg, err := z.Load(u)
+	pkg, err := Load(u, z.ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, "get target")
 	}
-	if err := pkg.Eval(); err != nil {
+	if _, err := pkg.Eval(nil); err != nil {
 		return nil, errors.Wrap(err, "get target")
 	}
-	if r, ok := pkg.rules[u.Fragment]; ok {
-		return r, nil
-	}
-
-	return nil, fmt.Errorf("ziggy: %s could not be found", u.String())
+	return pkg.GetTarget(u)
 }
 
 func (z *ziggy) normalzieURL(u *url.URL) error {
@@ -67,6 +59,5 @@ func (z *ziggy) normalzieURL(u *url.URL) error {
 		u.Path = path.Join(rootdir, u.Path)
 		return nil
 	}
-	log.Println(pretty.JSON(u))
 	return nil
 }

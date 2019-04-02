@@ -1,9 +1,9 @@
 """Example of a rule that runs a thing."""
 
-load("bldy://std", "assert", "context")
+load("https://bldy.build/std/master/assert.bldy", "assert")
 
 def _impl(ctx):
-    assert.fails(ctx.implements(context.build), "can't build {} outside the build context ".format(ctx.name))
+    assert.fail("can't build {} outside the build context ".format(ctx.name))
     print("Building {}_{}_{} ".format(ctx.name, ctx.os, ctx.arch))
 
 runner = rule(

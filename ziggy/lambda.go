@@ -47,29 +47,6 @@ func (l *lambda) CallInternal(thread *starlark.Thread, args starlark.Tuple, kwar
 	return starlark.None, nil
 }
 
-func (pkg *Package) newRule(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
-	var impl *starlark.Function
-	attrs := new(starlark.Dict)
-	outputs := new(starlark.Dict)
-	var name starlark.String
-
-	if err := starlark.UnpackArgs("ziggy.newRule", args, kwargs, ziggyKeyImpl, &impl, ziggyKeyAttrs, &attrs, ziggyKeyOutputs, &outputs); err != nil {
-		return nil, err
-	}
-	l := &lambda{
-		impl: impl,
-		ctx:  pkg.ctx,
-	}
-	l.register = func(s string) error {
-		pkg.rules[s] = &Rule{
-			l:    l,
-			name: string(name),
-		}
-		return nil
-	}
-	return l, nil
-}
-
 func findArg(kw starlark.Value, kwargs []starlark.Tuple) starlark.Value {
 	for i := 0; i < len(kwargs); i++ {
 		if ok, err := starlark.Equal(kwargs[i].Index(0), kw); err == nil && ok {
