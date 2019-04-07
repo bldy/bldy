@@ -7,22 +7,11 @@ import (
 	"go.starlark.net/starlark"
 )
 
-const (
-	ziggyKeyImpl    = "implementation"
-	ziggyKeyAttrs   = "attrs?"
-	ziggyKeyDeps    = "deps?"
-	ziggyKeyOutputs = "outputs?"
-	ziggyKeyName    = "name"
-	ziggyKeyCtx     = "ctx"
-)
-
 // Rule is a ziggy rule that is implemented in stardust
 type lambda struct {
 	name string
 	impl *starlark.Function
 	ctx  build.Context
-
-	register func(name string) error
 }
 
 func (l *lambda) String() string        { panic("not implemented") }
@@ -38,13 +27,12 @@ func (l *lambda) CallInternal(thread *starlark.Thread, args starlark.Tuple, kwar
 	if err := starlark.UnpackArgs(l.Name(), args, kwargs, ziggyKeyName, &name); err != nil {
 		return nil, err
 	}
-
-	if val, err := starlark.Call(thread, l.impl, []starlark.Value{newContext(l.ctx, string(name))}, nil); err != nil {
+	execContext := newContext(l.ctx, string(name))
+	if val, err := starlark.Call(thread, l.impl, []starlark.Value{execContext}, nil); err != nil {
 		return val, err
 	}
 
-	l.register(string(name))
-	return starlark.None, nil
+	return execContext, nil
 }
 
 func findArg(kw starlark.Value, kwargs []starlark.Tuple) starlark.Value {

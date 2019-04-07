@@ -1,4 +1,4 @@
-"""Example of a rule that runs a thing."""
+"""Rust toolchain"""
 
 def _impl(ctx):
     ctx.exec.run(
@@ -9,8 +9,9 @@ def _impl(ctx):
         ],
     )
 
-runner = rule(
-    implementation = _impl,
+rust = module(
+    "rust",
+    binary = rule(
+        implementation = _impl,
+    ),
 )
-
-export(runner(name = "run_test"))

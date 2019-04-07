@@ -7,6 +7,7 @@ import (
 
 	"bldy.build/build/graph"
 	"bldy.build/build/namespace"
+	"bldy.build/build/namespace/gvisor"
 )
 
 var (
@@ -18,5 +19,5 @@ func nodeid(n *graph.Node) string {
 }
 func (b *Builder) newnamespace(n *graph.Node) (namespace.Namespace, error) {
 
-	return nil, ErrHostNotAvailable
+	return gvisor.New()
 }

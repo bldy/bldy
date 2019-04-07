@@ -37,13 +37,14 @@ var global = starlark.StringDict{
 	"error":  starlark.NewBuiltin("error", error_),
 }
 
-func httpLoader(u *url.URL, bctx build.Context) (Package, error) {
+func httpLoader(u *url.URL, bctx build.Context, wd string) (Package, error) {
 	return &httpPackage{
 		Dir:        u.Path,
 		Name:       u.String(),
 		BuildFiles: []string{u.String()},
 		ctx:        bctx,
 		rules:      make(map[string]*Rule),
+		wd:         wd,
 	}, nil
 }
 
@@ -57,6 +58,8 @@ type httpPackage struct {
 	ctx build.Context
 
 	rules map[string]*Rule
+
+	wd string
 }
 
 func (pkg *httpPackage) Eval(thread *starlark.Thread) (starlark.StringDict, error) {
@@ -70,7 +73,7 @@ func (pkg *httpPackage) Eval(thread *starlark.Thread) (starlark.StringDict, erro
 					return nil, err
 				}
 				log.Println(pretty.JSON(u))
-				p, err := Load(u, pkg.ctx)
+				p, err := Load(u, pkg.ctx, pkg.wd)
 				if err != nil {
 					return nil, err
 				}
@@ -105,7 +108,6 @@ func (pkg *httpPackage) newRule(thread *starlark.Thread, fn *starlark.Builtin, a
 	var impl *starlark.Function
 	attrs := new(starlark.Dict)
 	outputs := new(starlark.Dict)
-	var name starlark.String
 
 	if err := starlark.UnpackArgs("ziggy.newRule", args, kwargs, ziggyKeyImpl, &impl, ziggyKeyAttrs, &attrs, ziggyKeyOutputs, &outputs); err != nil {
 		return nil, err
@@ -114,13 +116,7 @@ func (pkg *httpPackage) newRule(thread *starlark.Thread, fn *starlark.Builtin, a
 		impl: impl,
 		ctx:  pkg.ctx,
 	}
-	l.register = func(s string) error {
-		pkg.rules[s] = &Rule{
-			l:    l,
-			name: string(name),
-		}
-		return nil
-	}
+
 	return l, nil
 }
 

@@ -10,6 +10,7 @@ import (
 	"os"
 
 	"bldy.build/build/url"
+	"bldy.build/build/ziggy"
 
 	"bldy.build/build"
 )
@@ -22,6 +23,7 @@ var (
 func New(u *url.URL, wd string) (*Graph, error) {
 	g := Graph{
 		Nodes: make(map[string]*Node),
+		vm:    ziggy.New(wd, build.DefaultContext),
 	}
 	g.Root = g.getTarget(u)
 	g.Root.IsRoot = true

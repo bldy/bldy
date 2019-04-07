@@ -3,14 +3,26 @@ package ziggy
 import (
 	"fmt"
 
+	"bldy.build/build/ziggy/exec"
+
 	"bldy.build/build"
 	"go.starlark.net/starlark"
 )
+
+func newContext(ctx build.Context, name string) starlark.Value {
+	c := &Context{
+		ctx,
+		name,
+		exec.New(),
+	}
+	return c
+}
 
 type Context struct {
 	build.Context
 
 	name string
+	exec exec.ActionModule
 }
 
 func (ctx *Context) String() string        { panic("not implemented") }
@@ -27,12 +39,9 @@ func (ctx *Context) Attr(name string) (starlark.Value, error) {
 		return starlark.String(ctx.Context.BLDYOS), nil
 	case "arch":
 		return starlark.String(ctx.Context.BLDYARCH), nil
+	case "exec":
+		return &ctx.exec, nil
 	default:
-		return nil, fmt.Errorf("%q is not a ctx attributw", name)
+		return nil, fmt.Errorf("%q is not a ctx attribute", name)
 	}
-}
-
-func newContext(ctx build.Context, name string) starlark.Value {
-	c := &Context{ctx, name}
-	return c
 }

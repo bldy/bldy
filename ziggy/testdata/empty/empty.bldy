@@ -9,6 +9,8 @@ empty = rule(
     implementation = _empty_impl,
 )
 
-empty(
-    name = "empty",
+export(
+    empty(
+        name = "empty",
+    ),
 )

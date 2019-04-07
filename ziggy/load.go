@@ -7,7 +7,7 @@ import (
 	"bldy.build/build/url"
 )
 
-var loaders = make(map[string]func(u *url.URL, bctx build.Context) (Package, error))
+var loaders = make(map[string]func(u *url.URL, bctx build.Context, wd string) (Package, error))
 
 func init() {
 	loaders["file"] = fileLoader
@@ -15,10 +15,11 @@ func init() {
 	loaders["https"] = httpLoader
 }
 
-func Load(u *url.URL, bctx build.Context) (Package, error) {
+func Load(u *url.URL, bctx build.Context, wd string) (Package, error) {
 	load, ok := loaders[u.Scheme]
 	if !ok {
 		return nil, fmt.Errorf("%q is not a supported loader protocol", u.Scheme)
 	}
-	return load(u, bctx)
+
+	return load(u, bctx, wd)
 }

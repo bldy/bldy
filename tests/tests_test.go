@@ -1,58 +1,35 @@
 package integration
 
-/*
+import (
+	"context"
+	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
+	"path"
+	"testing"
+	"time"
+
+	"bldy.build/build"
+	"bldy.build/build/builder"
+	"bldy.build/build/graph"
+	"bldy.build/build/url"
+)
+
+var wd = func() string { wd, _ := os.Getwd(); return wd }()
 var tests = []struct {
-	name  string
-	label string
-	err   error
+	name string
+	url  string
+	wd   string
+	err  error
 }{
-	{
-		name:  "empty",
-		label: "//empty:nothing",
-		err:   nil,
-	},
-	{
-		name:  "binary",
-		label: "//cc:hello",
-		err:   nil,
-	},
-	{
-		name:  "library",
-		label: "//cc:hellowithlib",
-		err:   nil,
-	},
-	{
-		name:  "uname",
-		label: "//docker:uname",
-		err:   nil,
-	},
-	{
-		name:  "filemount",
-		label: "//docker:filemount",
-		err:   nil,
-	},
-}
 
-func setup(t *testing.T) string {
-	workdir, _ := os.Getwd()
-	wd := path.Join(workdir, "testdata")
-	os.Chdir(wd)
-	return wd
-}
-
-func TestGraph(t *testing.T) {
-	wd := setup(t)
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			g, err := graph.New(wd, test.label)
-			if err != nil {
-				t.Fatal(err)
-			}
-			if g == nil {
-				t.Fail()
-			}
-		})
-	}
+	{
+		name: "run",
+		url:  "rust#rust-bin",
+		wd:   path.Join(wd, "testdata"),
+		err:  nil,
+	},
 }
 
 type testNotifier struct {
@@ -62,9 +39,9 @@ type testNotifier struct {
 func (t *testNotifier) Update(n *graph.Node) {
 	switch n.Status {
 	case build.Building:
-		t.t.Logf("Started building %s ", n.Label.String())
+		t.t.Logf("Started building %s ", n.ID)
 	default:
-		t.t.Logf("Started %d %s ", n.Status, n.Label.String())
+		t.t.Logf("Started %d %s ", n.Status, n.ID)
 
 	}
 
@@ -72,7 +49,7 @@ func (t *testNotifier) Update(n *graph.Node) {
 
 func (t *testNotifier) Error(err error) {
 	t.t.Fail()
-	t.t.Logf("Errored:%+v\n", err)
+	t.t.Logf("error: %+v\n", err)
 }
 
 func (t *testNotifier) Done(d time.Duration) {
@@ -81,10 +58,10 @@ func (t *testNotifier) Done(d time.Duration) {
 }
 
 func TestBuild(t *testing.T) {
-	wd := setup(t)
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			g, err := graph.New(wd, test.label)
+			u, _ := url.Parse(test.url)
+			g, err := graph.New(u, test.wd)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -112,9 +89,7 @@ func TestBuild(t *testing.T) {
 			}
 			for _, file := range files {
 				_ = file
-				//	debug.Println(file.Name())
 			}
 		})
 	}
 }
-*/

@@ -8,4 +8,4 @@ printer = rule(
     implementation = _impl,
 )
 
-printer(name = "context_tester")
+export(printer(name = "context_tester"))

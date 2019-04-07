@@ -7,15 +7,15 @@ import (
 
 type Rule struct {
 	name string
-	l    *lambda
+	u    url.URL
 }
 
 func (r *Rule) Name() string {
-	panic("not implemented")
+	return r.name
 }
 
 func (r *Rule) Dependencies() []*url.URL {
-	panic("not implemented")
+	return nil
 }
 
 func (r *Rule) Outputs() []string {
@@ -23,9 +23,9 @@ func (r *Rule) Outputs() []string {
 }
 
 func (r *Rule) Hash() []byte {
-	panic("not implemented")
+	return []byte{}
 }
 
 func (r *Rule) Build(*executor.Executor) error {
-	panic("not implemented")
+	return nil
 }

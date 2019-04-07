@@ -2,12 +2,13 @@ package ziggy
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
+	"os"
+	"path"
 	"path/filepath"
 
+	"bldy.build/build/project"
 	"go.starlark.net/starlark"
-	"go.starlark.net/starlarkstruct"
 
 	"bldy.build/build"
 	"bldy.build/build/url"
@@ -21,8 +22,10 @@ type localPackage struct {
 	// Source files
 	BuildFiles []string // .bldy source files
 
-	ctx build.Context
+	wd string
 
+	ctx   build.Context
+	u     url.URL
 	rules map[string]*Rule
 }
 
@@ -36,7 +39,7 @@ func (pkg *localPackage) Eval(thread *starlark.Thread) (starlark.StringDict, err
 				if err != nil {
 					return nil, err
 				}
-				p, err := Load(u, pkg.ctx)
+				p, err := Load(u, pkg.ctx, pkg.wd)
 				if err != nil {
 					return nil, err
 				}
@@ -44,33 +47,38 @@ func (pkg *localPackage) Eval(thread *starlark.Thread) (starlark.StringDict, err
 			},
 		}
 	}
-	predeclared := starlark.StringDict{
-		"rule":   starlark.NewBuiltin("rule", pkg.newRule),
-		"struct": starlark.NewBuiltin("struct", starlarkstruct.Make),
-		"module": starlark.NewBuiltin("module", starlarkstruct.MakeModule),
+
+	predeclared := make(starlark.StringDict)
+	for k, v := range global {
+		predeclared[k] = v
 	}
-	global := make(starlark.StringDict)
+	predeclared["rule"] = starlark.NewBuiltin("rule", pkg.makeRule)
+	predeclared["export"] = starlark.NewBuiltin("export", pkg.export)
+	pkgVars := make(starlark.StringDict)
+
 	for _, file := range pkg.BuildFiles {
-		data, err := ioutil.ReadFile(file)
+		f, err := os.Open(file)
 		if err != nil {
 			return nil, errors.Wrap(err, "pkg eval")
 		}
-		_, err = starlark.ExecFile(thread, file, data, predeclared)
+		local, err := starlark.ExecFile(thread, file, f, predeclared)
 		if err != nil {
 			if evalErr, ok := err.(*starlark.EvalError); ok {
 				log.Fatal(evalErr.Backtrace())
 			}
 			log.Fatal(err)
 		}
+		for k, v := range local {
+			pkgVars[k] = v
+		}
 	}
-	return global, nil
+	return pkgVars, nil
 }
 
-func (pkg *localPackage) newRule(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
+func (pkg *localPackage) makeRule(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 	var impl *starlark.Function
 	attrs := new(starlark.Dict)
 	outputs := new(starlark.Dict)
-	var name starlark.String
 
 	if err := starlark.UnpackArgs("ziggy.newRule", args, kwargs, ziggyKeyImpl, &impl, ziggyKeyAttrs, &attrs, ziggyKeyOutputs, &outputs); err != nil {
 		return nil, err
@@ -79,18 +87,45 @@ func (pkg *localPackage) newRule(thread *starlark.Thread, fn *starlark.Builtin, 
 		impl: impl,
 		ctx:  pkg.ctx,
 	}
-	l.register = func(s string) error {
-		pkg.rules[s] = &Rule{
-			l:    l,
-			name: string(name),
-		}
-		return nil
-	}
+
 	return l, nil
 }
 
-func fileLoader(u *url.URL, bctx build.Context) (Package, error) {
-	_, dir := filepath.Split(u.Path)
+func (pkg *localPackage) export(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
+	for _, v := range args {
+		if ctx, ok := v.(*Context); ok {
+			name := ctx.name
+			u := pkg.u
+			u.Fragment = name
+			pkg.rules[name] = &Rule{
+				name: u.String(),
+				u:    u,
+			}
+			log.Println(name)
+		} else {
+			return nil, fmt.Errorf("was expecting exec context got %s instead", v.Type())
+		}
+	}
+	return starlark.None, nil
+}
+
+func fileLoader(u *url.URL, bctx build.Context, wd string) (Package, error) {
+	if u.Host == project.RootKey {
+		rootdir, err := project.Search(wd, func(s string) (os.FileInfo, error) {
+			for _, ext := range []string{".git"} {
+				if fi, err := os.Stat(path.Join(s, ext)); err != os.ErrNotExist {
+					return fi, nil
+				}
+			}
+			return nil, os.ErrNotExist
+		})
+		if err != nil {
+			return nil, err
+		}
+		u.Host = ""
+		u.Path = path.Join(rootdir, u.Path)
+	}
+	dir, _ := filepath.Split(u.Path)
 	files, err := filepath.Glob(filepath.Join(u.Path, "*.bldy"))
 	if err != nil {
 		return nil, errors.Wrap(err, "file loader")
@@ -101,11 +136,25 @@ func fileLoader(u *url.URL, bctx build.Context) (Package, error) {
 		BuildFiles: files,
 		ctx:        bctx,
 		rules:      make(map[string]*Rule),
+		u:          *u,
+		wd:         wd,
 	}, nil
 }
+
 func (pkg *localPackage) GetTarget(u *url.URL) (build.Rule, error) {
+	if err := pkg.absoluteURL(u); err != nil {
+		return nil, errors.Wrap(err, "get target")
+	}
 	if rule, ok := pkg.rules[u.Fragment]; ok {
 		return rule, nil
 	}
 	return nil, fmt.Errorf("couldn't find rule %q", u)
+}
+func (pkg *localPackage) absoluteURL(u *url.URL) error {
+	if u.Host == project.RootKey {
+		u.Host = ""
+		u.Path = path.Join(pkg.wd, u.Path)
+		return nil
+	}
+	return nil
 }
