@@ -9,21 +9,18 @@ require (
 	github.com/beorn7/perks v0.0.0-20160804104726-4c0e84591b9a
 	github.com/blang/semver v3.1.0+incompatible
 	github.com/cenkalti/backoff v2.1.1+incompatible
-
 	github.com/containerd/aufs v0.0.0-20181026202817-da3cf16bfbe6
 	github.com/containerd/btrfs v0.0.0-20180306195803-2e1aa0ddf94f
 	github.com/containerd/cgroups v0.0.0-20190328223300-4994991857f9
 	github.com/containerd/console v0.0.0-20180822173158-c12b1e7919c1
 	github.com/containerd/containerd v1.2.5
 	github.com/containerd/continuity v0.0.0-20181001140422-bd77b46c8352
-
 	github.com/containerd/cri v1.11.1-0.20190125013620-4dd6735020f5
 	github.com/containerd/fifo v0.0.0-20180307165137-3d5202aec260
 	github.com/containerd/go-cni v0.0.0-20181011142537-40bcf8ec8acd
 	github.com/containerd/go-runc v0.0.0-20180907222934-5a6d9f37cfa3
 	github.com/containerd/ttrpc v0.0.0-20190107211005-f02858b1457c
 	github.com/containerd/typeurl v0.0.0-20180627222232-a93fcdb778cd
-
 	github.com/containerd/zfs v0.0.0-20181026174235-9f6ef3b1fe51
 	github.com/containernetworking/cni v0.6.0
 	github.com/containernetworking/plugins v0.7.0
@@ -45,7 +42,6 @@ require (
 	github.com/google/btree v1.0.0
 	github.com/google/go-cmp v0.1.0
 	github.com/google/gofuzz v0.0.0-20161122191042-44d81051d367
-
 	github.com/google/skylark v0.0.0-20181101142754-a5f7082aabed
 	github.com/google/subcommands v0.0.0-20181012225330-46f0354f6315
 	github.com/google/uuid v1.1.1
@@ -98,7 +94,6 @@ require (
 	gopkg.in/inf.v0 v0.9.0
 	gopkg.in/yaml.v2 v2.2.2
 	gotest.tools v2.1.0+incompatible
-	gvisor.googlesource.com/gvisor v0.0.0-00010101000000-000000000000
 	k8s.io/api v0.0.0-20181204000039-89a74a8d264d
 	k8s.io/apimachinery v0.0.0-20181127025237-2b1284ed4c93
 	k8s.io/apiserver v0.0.0-20181204001702-9caa0299108f
@@ -111,4 +106,4 @@ require (
 	sigs.k8s.io/yaml v1.1.0
 )
 
-replace gvisor.googlesource.com/gvisor => ./third_party/gvisor
+

@@ -3,11 +3,12 @@
 package ziggy
 
 import (
-	"github.com/pkg/errors"
+	"io"
 
 	"bldy.build/build"
 	"bldy.build/build/url"
 	"go.starlark.net/starlark"
+	"golang.org/x/exp/errors"
 )
 
 const (
@@ -26,20 +27,21 @@ type ziggy struct {
 	globals starlark.StringDict
 }
 
-func New(wd string, ctx build.Context) build.VM {
-	return &ziggy{
-		ctx: ctx,
-		wd:  wd,
-	}
+func New(ctx build.Context) build.Store {
+	return &ziggy{}
 }
 
 func (z *ziggy) GetTarget(u *url.URL) (build.Rule, error) {
 	pkg, err := Load(u, z.ctx, z.wd)
 	if err != nil {
-		return nil, errors.Wrap(err, "get target")
+		return nil, errors.New("get target")
 	}
 	if _, err := pkg.Eval(nil); err != nil {
-		return nil, errors.Wrap(err, "get target")
+		return nil, errors.New("get target")
 	}
 	return pkg.GetTarget(u)
+}
+
+func (z *ziggy) Eval(r io.Reader) error {
+	return nil
 }

@@ -6,6 +6,7 @@
 package build
 
 import (
+	"io"
 	"runtime"
 
 	"bldy.build/build/executor"
@@ -55,6 +56,7 @@ type Rule interface {
 
 // VM seperate the parsing and evauluating targets logic from rest of bldy
 // so we can implement and use new grammars like jsonnet or go it self.
-type VM interface {
+type Store interface {
 	GetTarget(url *url.URL) (Rule, error)
+	Eval(io.Reader) error
 }
