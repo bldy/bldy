@@ -4,12 +4,19 @@ import (
 	"fmt"
 	"os"
 
+	"bldy.build/build"
+
 	"bldy.build/build/executor"
 	"bldy.build/build/ziggy/ziggyutils"
-
 	"go.starlark.net/starlark"
 	"go.starlark.net/starlarkstruct"
 )
+
+type ExecRuntime interface {
+	build.Runtime
+
+	Exec(cmd string, env, args []string) error
+}
 
 type ActionModule struct {
 	starlarkstruct.Module
@@ -58,7 +65,11 @@ type run struct {
 	ExecutionRequirements map[string]string `ziggy:"execution_requirements"` // Information for scheduling the action. See tags for useful keys.
 }
 
-func (r *run) Do(e *executor.Executor) error {
+func (r *run) Do(rt build.Runtime) error {
+	runtime, ok := rt.(ExecRuntime)
+	if !ok {
+		return fmt.Errorf("expected execution runtime got %T instead", runtime)
+	}
 	env := os.Environ()
 	if !r.UseDefaultShellEnv {
 		env = []string{}
@@ -66,6 +77,6 @@ func (r *run) Do(e *executor.Executor) error {
 	for k, v := range r.Env {
 		env = append(env, fmt.Sprintf("%s=%s", k, v))
 	}
-	e.Println(r.ProgressMessage)
-	return e.Exec(r.Executable, env, r.Arguments)
+	runtime.Printf(r.ProgressMessage)
+	return runtime.Exec(r.Executable, env, r.Arguments)
 }

@@ -1,20 +1,6 @@
 package ziggy
 
-import (
-	"fmt"
-	"log"
-	"os"
-	"path"
-	"path/filepath"
-
-	"bldy.build/build/project"
-	"go.starlark.net/starlark"
-
-	"bldy.build/build"
-	"bldy.build/build/url"
-	"github.com/pkg/errors"
-)
-
+/*
 type localPackage struct {
 	Dir  string // directory containing package sources
 	Name string // package name
@@ -26,7 +12,7 @@ type localPackage struct {
 
 	ctx   build.Context
 	u     url.URL
-	rules map[string]*Rule
+	tasks map[string]*Task
 }
 
 func (pkg *localPackage) Eval(thread *starlark.Thread) (starlark.StringDict, error) {
@@ -97,7 +83,7 @@ func (pkg *localPackage) export(thread *starlark.Thread, fn *starlark.Builtin, a
 			name := ctx.name
 			u := pkg.u
 			u.Fragment = name
-			pkg.rules[name] = &Rule{
+			pkg.tasks[name] = &Task{
 				name: u.String(),
 				u:    u,
 			}
@@ -135,21 +121,22 @@ func fileLoader(u *url.URL, bctx build.Context, wd string) (Package, error) {
 		Name:       dir,
 		BuildFiles: files,
 		ctx:        bctx,
-		rules:      make(map[string]*Rule),
+		tasks:      make(map[string]*Task),
 		u:          *u,
 		wd:         wd,
 	}, nil
 }
 
-func (pkg *localPackage) GetTarget(u *url.URL) (build.Rule, error) {
+func (pkg *localPackage) GetTask(u *url.URL) (build.Task, error) {
 	if err := pkg.absoluteURL(u); err != nil {
 		return nil, errors.Wrap(err, "get target")
 	}
-	if rule, ok := pkg.rules[u.Fragment]; ok {
+	if rule, ok := pkg.tasks[u.Fragment]; ok {
 		return rule, nil
 	}
 	return nil, fmt.Errorf("couldn't find rule %q", u)
 }
+
 func (pkg *localPackage) absoluteURL(u *url.URL) error {
 	if u.Host == project.RootKey {
 		u.Host = ""
@@ -158,3 +145,4 @@ func (pkg *localPackage) absoluteURL(u *url.URL) error {
 	}
 	return nil
 }
+*/

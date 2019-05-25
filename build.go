@@ -6,23 +6,11 @@
 package build
 
 import (
+	"context"
 	"io"
-	"runtime"
 
-	"bldy.build/build/executor"
 	"bldy.build/build/url"
 )
-
-type Context struct {
-	BLDYARCH string // target architecture
-	BLDYOS   string // target operating system
-
-}
-
-var DefaultContext = Context{
-	BLDYARCH: runtime.GOARCH,
-	BLDYOS:   runtime.GOOS,
-}
 
 //go:generate stringer -type=Status
 // Status represents a nodes status.
@@ -45,18 +33,36 @@ const (
 	Building
 )
 
-// Rule defines the interface that rules must implement for becoming build targets.
-type Rule interface {
-	Name() string
-	Dependencies() []*url.URL
-	Outputs() []string
-	Hash() []byte
-	Build(*executor.Executor) error
-}
-
 // VM seperate the parsing and evauluating targets logic from rest of bldy
 // so we can implement and use new grammars like jsonnet or go it self.
 type Store interface {
-	GetTarget(url *url.URL) (Rule, error)
-	Eval(io.Reader) error
+	GetTask(url *url.URL) (Task, error)
+	Run(io.Reader) error
+}
+
+type Logger interface {
+}
+
+// Runtime defines a runtime for the builds.
+// This context is scoped to the specifics of the execution environment.
+type Runtime interface {
+	OS() string
+	Arch() string
+
+	Printf(formmat string, v ...interface{})
+}
+
+// Task defines is the execution specific Rule.
+type Task interface {
+	Name() string
+	Hash() []byte
+	Run(Runtime) error
+	Dependencies() []*url.URL
+	Outputs() []string
+}
+
+type Context interface {
+	context.Context
+
+	Getwd() (dir string, err error)
 }

@@ -1,17 +1,14 @@
 package ziggy
 
 import (
-	"fmt"
-
-	"bldy.build/build"
 	"go.starlark.net/starlark"
 )
 
-// Rule is a ziggy rule that is implemented in stardust
+/*
 type lambda struct {
-	name string
-	impl *starlark.Function
-	ctx  build.Context
+	name    string
+	impl    *starlark.Function
+	runtime build.Runtime
 }
 
 func (l *lambda) String() string        { panic("not implemented") }
@@ -34,7 +31,7 @@ func (l *lambda) CallInternal(thread *starlark.Thread, args starlark.Tuple, kwar
 
 	return execContext, nil
 }
-
+*/
 func findArg(kw starlark.Value, kwargs []starlark.Tuple) starlark.Value {
 	for i := 0; i < len(kwargs); i++ {
 		if ok, err := starlark.Equal(kwargs[i].Index(0), kw); err == nil && ok {

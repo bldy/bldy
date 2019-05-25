@@ -12,6 +12,8 @@ import (
 	"strings"
 	"time"
 
+	"bldy.build/build"
+
 	"bldy.build/build/namespace"
 	"sevki.org/x/debug"
 )
@@ -24,7 +26,7 @@ var (
 // during the build stage, unlike rules actions are NOT meant to be executed
 // in parralel.
 type Action interface {
-	Do(*Executor) error
+	Do(build.Runtime) error
 }
 
 // Executor defines the envinroment in which a target will be built, it

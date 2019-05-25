@@ -1,31 +1,31 @@
 package ziggy
 
 import (
-	"bldy.build/build/executor"
+	"bldy.build/build"
 	"bldy.build/build/url"
 )
 
-type Rule struct {
+type Task struct {
 	name string
 	u    url.URL
 }
 
-func (r *Rule) Name() string {
-	return r.name
+func (t *Task) Name() string {
+	return t.name
 }
 
-func (r *Rule) Dependencies() []*url.URL {
+func (t *Task) Dependencies() []*url.URL {
 	return nil
 }
 
-func (r *Rule) Outputs() []string {
+func (t *Task) Outputs() []string {
 	panic("not implemented")
 }
 
-func (r *Rule) Hash() []byte {
+func (t *Task) Hash() []byte {
 	return []byte{}
 }
 
-func (r *Rule) Build(*executor.Executor) error {
+func (t *Task) Run(build.Runtime) error {
 	return nil
 }

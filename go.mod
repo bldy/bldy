@@ -83,6 +83,7 @@ require (
 	go.etcd.io/bbolt v1.3.2
 	go.starlark.net v0.0.0-20190402030956-cb523dafc375
 	golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2
+	golang.org/x/exp/errors v0.0.0-20190510132918-efd6b22b2522 // indirect
 	golang.org/x/net v0.0.0-20190403144856-b630fd6fe46b
 	golang.org/x/oauth2 v0.0.0-20180821212333-d2e6202438be
 	golang.org/x/sync v0.0.0-20190227155943-e225da77a7e6
@@ -105,5 +106,3 @@ require (
 	sevki.org/x v1.0.0
 	sigs.k8s.io/yaml v1.1.0
 )
-
-

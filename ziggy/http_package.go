@@ -1,19 +1,6 @@
 package ziggy
 
-import (
-	"fmt"
-	"log"
-	"net/http"
-	"strings"
-
-	"bldy.build/build"
-	"bldy.build/build/url"
-	"github.com/pkg/errors"
-	"go.starlark.net/starlark"
-	"go.starlark.net/starlarkstruct"
-	"sevki.org/x/pretty"
-)
-
+/*
 // error(x) reports an error to the Go test framework.
 func error_(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 	if len(args) != 1 {
@@ -37,13 +24,13 @@ var global = starlark.StringDict{
 	"error":  starlark.NewBuiltin("error", error_),
 }
 
-func httpLoader(u *url.URL, bctx build.Context, wd string) (Package, error) {
+func httpLoader(u *url.URL, rt build.Runtime) (Package, error) {
 	return &httpPackage{
 		Dir:        u.Path,
 		Name:       u.String(),
 		BuildFiles: []string{u.String()},
-		ctx:        bctx,
-		rules:      make(map[string]*Rule),
+		runtime:    rt,
+		tasks:      make(map[string]*Task),
 		wd:         wd,
 	}, nil
 }
@@ -55,9 +42,9 @@ type httpPackage struct {
 	// Source files
 	BuildFiles []string // .bldy source files
 
-	ctx build.Context
+	runtime build.Runtime
 
-	rules map[string]*Rule
+	tasks map[string]*Task
 
 	wd string
 }
@@ -122,9 +109,10 @@ func (pkg *httpPackage) newRule(thread *starlark.Thread, fn *starlark.Builtin, a
 
 const localKey = "Reporter"
 
-func (pkg *httpPackage) GetTarget(u *url.URL) (build.Rule, error) {
-	if rule, ok := pkg.rules[u.Fragment]; ok {
+func (pkg *httpPackage) GetTask(u *url.URL) (build.Task, error) {
+	if rule, ok := pkg.tasks[u.Fragment]; ok {
 		return rule, nil
 	}
 	return nil, fmt.Errorf("couldn't find rule %q", u)
 }
+*/

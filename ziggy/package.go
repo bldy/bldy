@@ -11,5 +11,5 @@ import (
 
 type Package interface {
 	Eval(thread *starlark.Thread) (starlark.StringDict, error)
-	GetTarget(u *url.URL) (build.Rule, error)
+	GetTask(u *url.URL) (build.Task, error)
 }

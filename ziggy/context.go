@@ -1,14 +1,6 @@
 package ziggy
 
-import (
-	"fmt"
-
-	"bldy.build/build/ziggy/exec"
-
-	"bldy.build/build"
-	"go.starlark.net/starlark"
-)
-
+/*
 func newContext(ctx build.Context, name string) starlark.Value {
 	c := &Context{
 		ctx,
@@ -20,7 +12,6 @@ func newContext(ctx build.Context, name string) starlark.Value {
 
 type Context struct {
 	build.Context
-
 	name string
 	exec exec.ActionModule
 }
@@ -36,12 +27,13 @@ func (ctx *Context) Attr(name string) (starlark.Value, error) {
 	case "name":
 		return starlark.String(ctx.name), nil
 	case "os":
-		return starlark.String(ctx.Context.BLDYOS), nil
+		return starlark.String(ctx.Context.OS()), nil
 	case "arch":
-		return starlark.String(ctx.Context.BLDYARCH), nil
+		return starlark.String(ctx.Context.Arch()), nil
 	case "exec":
 		return &ctx.exec, nil
 	default:
 		return nil, fmt.Errorf("%q is not a ctx attribute", name)
 	}
 }
+*/
