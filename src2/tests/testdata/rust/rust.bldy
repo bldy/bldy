@@ -1,0 +1,3 @@
+load("toolchain/toolchain.bldy", "rust")
+
+rustbin = rust.binary(name = "rustbin")

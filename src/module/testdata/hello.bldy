@@ -1,0 +1,3 @@
+val Main = exec() (out file) {"
+	echo hello world >>{{out}}
+"}

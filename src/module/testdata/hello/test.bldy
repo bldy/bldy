@@ -1,0 +1,9 @@
+keyspace "build.bldy.hello"
+
+compile := func(src file) (obj file) =>  exec(image:= "ubuntu") (obj file) {"gcc -c {{src}}"}
+val Main = {
+	x := exec(image:="ubuntu") (out file) {"
+		echo hello world >>{{out}}
+	"}
+	(x)
+}

@@ -1,0 +1,3 @@
+val Main = exec(image := "ubuntu", mem := GiB) (out file) {"
+	echo hello world >>{{out}}
+"}
