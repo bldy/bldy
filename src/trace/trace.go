@@ -128,11 +128,11 @@ func (p *Tracer) trace() {
 		case *Clone:
 			if call.newPid > 0 {
 				log.Println(call)
-				t := &Tracer{pid: call.newPid}
-				log.Println(t.cmdline)
-					if err := unix.PtraceAttach(call.newPid); err != nil {
-						panic(err)
-					}
+				_ = &Tracer{pid: call.newPid}
+				//		log.Println(t.cmdline)
+				if err := unix.PtraceAttach(call.newPid); err != nil {
+					panic(err)
+				}
 			}
 		}
 

@@ -35,5 +35,5 @@ for details.
 * [sevki](https://github.com/sevki)
 
 ---
-Copyright (c) 2015-2019, Sevki <s@sevki.org>
+Copyright (c) 2015-2020, Sevki <s@sevki.org>
 All rights reserved.
