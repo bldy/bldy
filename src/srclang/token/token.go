@@ -16,6 +16,7 @@ const (
 	NEWLINE
 	ERROR
 
+	// Operators
 	ADD // +
 	SUB // -
 	MUL // *
@@ -83,6 +84,8 @@ const (
 	INT
 	FLOAT
 	HEX
+	FUNC // func
+	keywords_end
 )
 
 var tokens = [...]string{
@@ -149,9 +152,12 @@ var tokens = [...]string{
 	TYPE:   "type",
 	MODULE: "module",
 	LET:    "let",
+	FUNC:   "func",
 }
 var keywords map[string]Type
 
+func Begin() Type { return EOF }
+func End() Type   { return keywords_end }
 func caller() (call string, file string, line int) {
 	var caller uintptr
 	caller, file, line, _ = runtime.Caller(2)
@@ -162,7 +168,7 @@ func caller() (call string, file string, line int) {
 
 func init() {
 	keywords = make(map[string]Type)
-	for i := ADD; i <= LET; i++ {
+	for i := ADD; i < keywords_end; i++ {
 		keywords[tokens[i]] = i
 	}
 }

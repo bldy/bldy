@@ -57,7 +57,7 @@ func (d *Decoder) Decode() (*token.Token, error) {
 	}
 	// this is hackyyy but it's a test util so doesn't matter.
 	typ := token.ERROR
-	for i := token.EOF; i <= token.HEX; i++ {
+	for i := token.Begin(); i <= token.End(); i++ {
 		if i.String() == xtyp {
 			typ = i
 		}

@@ -10,7 +10,7 @@ import (
 )
 
 func TestLex(t *testing.T) {
-	files, err := filepath.Glob("../testdata/*.bldy")
+	files, err := filepath.Glob("../testdata/*.src")
 	if err != nil {
 		panic(err)
 	}
