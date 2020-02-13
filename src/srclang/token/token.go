@@ -240,7 +240,7 @@ type Token struct {
 	Position
 }
 
-func (t *Token) Kind() Type     { return t.t }
+func (t *Token) Type() Type     { return t.t }
 func (t *Token) Data() []byte   { return t.data }
 func (t *Token) Len() int       { return len(t.data) }
 func (t *Token) Offset() uint64 { return t.offset }
@@ -249,7 +249,7 @@ func (t *Token) Is(a *Token) error {
 	if a == nil {
 		panic("a cannot be nil")
 	}
-	if t.Kind() != a.Kind() {
+	if t.Type() != a.Type() {
 		return fmt.Errorf("%s is not the same as %s", t.t, a.t)
 	}
 	if t.Offset() != a.Offset() {

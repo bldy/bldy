@@ -24,7 +24,7 @@ type Encoder struct{ w io.Writer }
 
 func Encode(t *token.Token) string {
 	d := t.Data()
-	return fmt.Sprintf(_fmt+"\n", t.Line, t.Column, t.Offset(), len(d), t.Kind(), d)
+	return fmt.Sprintf(_fmt+"\n", t.Line, t.Column, t.Offset(), len(d), t.Type(), d)
 }
 
 func (e *Encoder) Encode(t *token.Token) { fmt.Fprint(e.w, Encode(t)) }
