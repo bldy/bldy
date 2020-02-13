@@ -7,7 +7,7 @@
 package internal
 
 import (
-	"bldy.build/bldy/src/build"
+	"bldy.build/bldy/build"
 )
 
 var (

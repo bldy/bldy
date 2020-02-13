@@ -3,7 +3,6 @@ package racy
 
 import (
 	"crypto/sha256"
-	"encoding/binary"
 	"fmt"
 	"hash"
 	"io"
@@ -12,8 +11,6 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
-
-	"go.starlark.net/starlark"
 )
 
 // NewHash returns a new hash.Hash
@@ -147,6 +144,7 @@ func (r *Racy) HashStrings(strs ...string) {
 	}
 }
 
+/*
 func (r *Racy) HashStarlarkValues(vals ...starlark.Value) {
 	for _, v := range vals {
 		r.HashStarlarkValue(v)
@@ -168,4 +166,4 @@ func (r *Racy) HashStarlarkValue(v starlark.Value) {
 		}
 	}
 
-}
+}*/

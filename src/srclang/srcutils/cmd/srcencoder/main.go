@@ -1,12 +1,14 @@
 package main
 
 import (
+	"bytes"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 
-	"bldy.build/bldy/script/lexer"
-	"bldy.build/bldy/script/srcutils"
+	"bldy.build/bldy/srclang/lexer"
+	"bldy.build/bldy/srclang/srcutils"
 )
 
 func main() {
@@ -15,23 +17,25 @@ func main() {
 		panic(err)
 	}
 	for _, file := range files {
-		f, err := os.OpenFile(file, os.O_RDWR|os.O_CREATE, 0755)
+		f, err := os.Open(file)
+		defer f.Close()
 		if err != nil {
 			panic(err)
 		}
 		l := lexer.New(file, f)
-		out, err := os.OpenFile(
-			strings.Replace(file, filepath.Ext(file), ".dat", 1),
-			os.O_RDWR|os.O_CREATE,
-			0755,
-		)
+		l.Debug()
+		buf := &bytes.Buffer{}
 		if err != nil {
 			panic(err)
 		}
-		enc := srcutils.NewEncoder(out)
+		enc := srcutils.NewEncoder(buf)
 		for tok := range l.Tokens {
 			enc.Encode(tok)
 		}
-		out.Close()
+		ioutil.WriteFile(
+			strings.Replace(file, filepath.Ext(file), ".dat", 1),
+			buf.Bytes(),
+			0755,
+		)
 	}
 }
