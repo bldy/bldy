@@ -1,21 +1,180 @@
 package token
 
 import (
+	"bytes"
 	"fmt"
+	"runtime"
+	"strings"
 )
 
 //go:generate stringer -type Type
-
 type Type int
 
 const (
+	// Special token types
 	EOF Type = iota
-	Newline
-	Error
-	Module
-	Ident
-	String
+	NEWLINE
+	ERROR
+
+	ADD // +
+	SUB // -
+	MUL // *
+	QUO // /
+	REM // %
+
+	AND     // &
+	OR      // |
+	XOR     // ^
+	SHL     // <<
+	SHR     // >>
+	AND_NOT // &^
+
+	ADD_ASSIGN // +=
+	SUB_ASSIGN // -=
+	MUL_ASSIGN // *=
+	QUO_ASSIGN // /=
+	REM_ASSIGN // %=
+
+	AND_ASSIGN     // &=
+	OR_ASSIGN      // |=
+	XOR_ASSIGN     // ^=
+	SHL_ASSIGN     // <<=
+	SHR_ASSIGN     // >>=
+	AND_NOT_ASSIGN // &^=
+
+	LAND  // &&
+	LOR   // ||
+	ARROW // <-
+	INC   // ++
+	DEC   // --
+
+	EQL    // ==
+	LSS    // <
+	GTR    // >
+	ASSIGN // =
+	NOT    // !
+
+	NEQ      // !=
+	LEQ      // <=
+	GEQ      // >=
+	DEFINE   // :=
+	ELLIPSIS // ...
+
+	LPAREN // (
+	LBRACK // [
+	LBRACE // {
+	COMMA  // ,
+	PERIOD // .
+
+	RPAREN    // )
+	RBRACK    // ]
+	RBRACE    // }
+	SEMICOLON // ;
+	COLON     // :
+
+	// Keywords
+	TYPE   // type MACH file
+	MODULE // module
+	LET    // let
+
+	//
+	IDENT  // main
+	STRING // "something"
+	INT
+	FLOAT
+	HEX
 )
+
+var tokens = [...]string{
+	EOF:     "EOF",
+	NEWLINE: string([]byte{'\n'}),
+	ERROR:   "ERR",
+
+	ADD: "+",
+	SUB: "-",
+	MUL: "*",
+	QUO: "/",
+	REM: "%",
+
+	AND:     "&",
+	OR:      "|",
+	XOR:     "^",
+	SHL:     "<<",
+	SHR:     ">>",
+	AND_NOT: "&^",
+
+	ADD_ASSIGN: "+=",
+	SUB_ASSIGN: "-=",
+	MUL_ASSIGN: "*=",
+	QUO_ASSIGN: "/=",
+	REM_ASSIGN: "%=",
+
+	AND_ASSIGN:     "&=",
+	OR_ASSIGN:      "|=",
+	XOR_ASSIGN:     "^=",
+	SHL_ASSIGN:     "<<=",
+	SHR_ASSIGN:     ">>=",
+	AND_NOT_ASSIGN: "&^=",
+
+	LAND:  "&&",
+	LOR:   "||",
+	ARROW: "<-",
+	INC:   "++",
+	DEC:   "--",
+
+	EQL:    "==",
+	LSS:    "<",
+	GTR:    ">",
+	ASSIGN: "=",
+	NOT:    "!",
+
+	NEQ:      "!=",
+	LEQ:      "<=",
+	GEQ:      ">=",
+	DEFINE:   ":=",
+	ELLIPSIS: "...",
+
+	LPAREN: "(",
+	LBRACK: "[",
+	LBRACE: "{",
+	COMMA:  ",",
+	PERIOD: ".",
+
+	RPAREN:    ")",
+	RBRACK:    "]",
+	RBRACE:    "}",
+	SEMICOLON: ";",
+	COLON:     ":",
+
+	TYPE:   "type",
+	MODULE: "module",
+	LET:    "let",
+}
+var keywords map[string]Type
+
+func caller() (call string, file string, line int) {
+	var caller uintptr
+	caller, file, line, _ = runtime.Caller(2)
+	name := strings.Split(runtime.FuncForPC(caller).Name(), ".")
+	callName := name[len(name)-1]
+	return callName, file, line
+}
+
+func init() {
+	keywords = make(map[string]Type)
+	for i := ADD; i <= LET; i++ {
+		keywords[tokens[i]] = i
+	}
+}
+
+// Lookup maps an identifier to its keyword token or IDENT (if not a keyword).
+//
+func Lookup(ident string) Type {
+	if typ, is_keyword := keywords[ident]; is_keyword {
+		return typ
+	}
+	return IDENT
+}
 
 func New(t Type, data []byte, file string, offset, line, column int) *Token {
 	return &Token{
@@ -75,7 +234,29 @@ type Token struct {
 	Position
 }
 
-func (t *Token) Kind() int      { return int(t.t) }
+func (t *Token) Kind() Type     { return t.t }
 func (t *Token) Data() []byte   { return t.data }
 func (t *Token) Len() int       { return len(t.data) }
 func (t *Token) Offset() uint64 { return t.offset }
+
+func (t *Token) Is(a *Token) error {
+	if a == nil {
+		panic("a cannot be nil")
+	}
+	if t.Kind() != a.Kind() {
+		return fmt.Errorf("%s is not the same as %s", t.t, a.t)
+	}
+	if t.Offset() != a.Offset() {
+		return fmt.Errorf("expected offset of %d got %d instead", t.Offset(), a.Offset())
+	}
+	if t.Line != a.Line {
+		return fmt.Errorf("expected line of %d got %d instead", t.Line, a.Line)
+	}
+	if t.Column != a.Column {
+		return fmt.Errorf("expected line of %d got %d instead", t.Column, a.Column)
+	}
+	if bytes.Compare(t.Data(), a.Data()) != 0 {
+		return fmt.Errorf("%q is not the same as %q", t.Data(), a.Data())
+	}
+	return nil
+}

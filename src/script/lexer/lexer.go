@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"log"
 	"unicode"
 	"unicode/utf8"
 
@@ -18,17 +19,15 @@ type stateFn func(*Lexer) stateFn
 // Lexer holds the state of the lexer.
 type Lexer struct {
 	Tokens chan *token.Token // channel of scanned items
-	r      io.ByteReader
-	c      io.Closer
-	done   bool
-	name   string // the name of the input; used only for error reports
-	buf    []byte
-	input  string  // the line of text being scanned.
-	state  stateFn // the next lexing function to enter
-	line   int     // line number in input
-	pos    int     // current position in the input
-	start  int     // start position of this item
-	width  int     // width of last rune read from input
+
+	done bool
+	name string // the name of the input; used only for error reports
+
+	r     io.ByteReader
+	c     io.Closer
+	buf   []byte
+	lb    *lineBuffer
+	state stateFn // the next lexing function to enter
 
 	debug     bool
 	lastToken token.Token
@@ -36,12 +35,16 @@ type Lexer struct {
 
 func New(name string, r io.ReadCloser) *Lexer {
 	l := &Lexer{
-		r:      bufio.NewReader(r),
-		c:      r,
-		name:   name,
-		line:   1,
+		r:    bufio.NewReader(r),
+		c:    r,
+		name: name,
+		lb: &lineBuffer{
+			line: 0,
+			col:  0,
+			r:    bufio.NewReader(r),
+		},
 		Tokens: make(chan *token.Token),
-		debug:  true,
+		debug:  false,
 	}
 	go l.run()
 	return l
@@ -49,7 +52,7 @@ func New(name string, r io.ReadCloser) *Lexer {
 
 // run runs the state machine for the Scanner.
 func (l *Lexer) run() {
-	for l.state = lexAny; l.state != nil; {
+	for l.state = lexAny; l.state != nil && !l.done; {
 		l.state = l.state(l)
 	}
 	l.emit(token.EOF)
@@ -57,112 +60,140 @@ func (l *Lexer) run() {
 	close(l.Tokens)
 }
 
-func (l *Lexer) emit(t token.Type) {
-	s := l.input[l.start:l.pos]
-	tok := token.New(t, []byte(s), l.name, l.start, l.line, l.pos)
+func (l *Lexer) buffer() []byte { return l.lb.buffer() }
 
+func (l *Lexer) emit(t token.Type) {
+	s := l.lb.buffer()
+	tok := token.New(t, s, l.name, int(l.lb.offset)-len(s), l.lb.line, l.lb.col-utf8.RuneCount(s)+1)
 	if l.debug {
-	//	fmt.Println(tok)
+		call, file, line := caller()
+		log.Println(tok)
+		log.Printf("%s:%d <%s>\n", file, line, call)
 	}
-	if t != token.Newline {
+	l.lb.markStart()
+	if t != token.NEWLINE {
 		l.Tokens <- tok
-	}
-	l.start = l.pos
-	l.width = 0
-	if t == token.Newline {
-		l.line++
 	}
 }
 
-// next returns the next rune in the input.
 func (l *Lexer) next() rune {
-	if !l.done && int(l.pos) == len(l.input) {
-		l.loadLine()
+	c, _, err := l.lb.ReadRune()
+	if err == io.EOF {
+		l.done = true
+	} else if err != nil {
+		l.done = true
+		l.errorf("error reading line: %v", err)
+		return -1
 	}
-	if len(l.input) == l.start {
-		return eof
-	}
-	r, w := utf8.DecodeRuneInString(l.input[l.pos:])
-	l.width = w
-	l.pos += l.width
-	return r
+	return c
 }
 
 // ignore skips over the pending input before this point.
-func (l *Lexer) ignore() {
-	l.start = l.pos
-}
-
-// loadLine reads the next line of input and stores it in (appends it to) the input.
-// (l.input may have data left over when we are called.)
-// It strips carriage returns to make subsequent processing simpler.
-func (l *Lexer) loadLine() {
-	l.buf = l.buf[:0]
-	for {
-		c, err := l.r.ReadByte()
-		if err != nil {
-			l.done = true
-			break
-		}
-		if c != '\r' {
-			l.buf = append(l.buf, c)
-		}
-		if c == '\n' {
-			break
-		}
-	}
-	l.input = l.input[l.start:l.pos] + string(l.buf)
-	l.pos -= l.start
-	l.start = 0
-}
+func (l *Lexer) ignore() { l.lb.markStart() }
 
 // backup steps back one rune. Can only be called once per call of next.
 func (l *Lexer) backup() {
-	l.pos -= l.width
+	if err := l.lb.UnreadRune(); err != nil {
+		panic(err)
+	}
 }
 
 // peek returns but does not consume the next rune in the input.
-func (l *Lexer) peek() rune {
-	r := l.next()
-	l.backup()
-	return r
-}
+func (l *Lexer) peek() rune { return l.lb.peek() }
 
 // errorf returns an error token and continues to scan.
 func (l *Lexer) errorf(format string, args ...interface{}) stateFn {
-	l.Tokens <- token.New(token.Error, []byte(fmt.Sprintf(format, args...)), l.name, l.start, l.line, l.pos)
-
+	s := l.lb.buffer()
+	l.Tokens <- token.New(token.ERROR, []byte(fmt.Sprintf(format, args...)), l.name, int(l.lb.offset)-len(s), l.lb.line, l.lb.col)
 	return lexAny
 }
 
 func lexAny(l *Lexer) stateFn {
-	for {
-		switch r := l.next(); {
-		case isString(r):
-			return lexAlphaNumeric
+	for !l.done {
+		r := l.next()
+		switch {
 		case isSpace(r):
 			return lexSpace
+		case isEndOfLine(r):
+			return lexNewLine
+		case unicode.IsDigit(r):
+			return lexNumber
+		case isIdent(r):
+			return lexIdent
 		default:
+			switch r {
+			case '"':
+				return lexString
+			case '{', '}', '(', ')', '=', ':':
+				return lexOperator
+			}
 			return nil
 		}
 	}
+	return nil
 }
-
-func lexAlphaNumeric(l *Lexer) stateFn {
-	for isString(l.peek()) {
+func lexString(l *Lexer) stateFn {
+	fr, _ := utf8.DecodeRune(l.buffer())
+	l.next()
+	for lr, _ := utf8.DecodeLastRune(l.buffer()); lr != fr; lr, _ = utf8.DecodeLastRune(l.buffer()) {
 		l.next()
 	}
+	l.emit(token.STRING)
+	return lexAny
+}
 
-	switch l.input[l.start:l.pos] {
-	case "module":
-		l.emit(token.Module)
-		break
-	default:
-		l.emit(token.String)
+func lexNumber(l *Lexer) stateFn {
+	typ := token.INT
+	for isValidNumber(l.peek()) {
+		switch l.next() {
+		case 'x', 'X':
+			typ = token.HEX
+		case '.':
+			typ = token.FLOAT
+		}
+	}
+	l.emit(typ)
+	return lexAny
+}
+
+func lexType(l *Lexer) stateFn {
+	l.emit(token.COLON)
+	return lexAny
+}
+
+func lexOperator(l *Lexer) stateFn {
+	for {
+		if typ := token.Lookup(string(l.buffer())); typ != token.ERROR {
+			l.emit(typ)
+			return lexAny
+		}
+
+		if !isSpace(l.peek()) && !isEndOfLine(l.peek()) {
+			l.next()
+		} else {
+			break
+		}
 	}
 
 	return lexAny
 }
+
+func lexIdent(l *Lexer) stateFn {
+	for isIdent(l.peek()) {
+		l.next()
+	}
+	l.emit(token.Lookup(string(l.buffer())))
+	return lexAny
+}
+func lexAlphaNumeric(l *Lexer) stateFn {
+	for isAlphaNumeric(l.peek()) {
+		l.next()
+	}
+	l.emit(token.Lookup(string(l.buffer())))
+	return lexAny
+}
+
+func lexNewLine(l *Lexer) stateFn { l.emit(token.NEWLINE); return lexAny }
 
 // lexSpace scans a run of space characters.
 // One space has already been seen.
@@ -177,30 +208,28 @@ func lexSpace(l *Lexer) stateFn {
 // Helper functions
 
 // isSpace reports whether r is a space character.
-func isSpace(r rune) bool {
-	return r == ' ' || r == '\t'
-}
+func isSpace(r rune) bool { return unicode.IsSpace(r) }
 
 // isEndOfLine reports whether r is an end-of-line character.
 func isEndOfLine(r rune) bool {
 	return r == '\r' || r == '\n'
 }
 
-// isAlphaNumeric reports whether r is an alphabetic, digit, or underscore.
-func isString(r rune) bool {
-	return r == '_' || unicode.IsLetter(r)
+// isIdent reports whether r is an alphabetic, digit, or underscore.
+func isIdent(r rune) bool {
+	return unicode.IsLetter(r) || r == '_' || unicode.IsDigit(r)
 }
 
 // isAlphaNumeric reports whether r is an alphabetic, digit, or underscore.
 func isAlphaNumeric(r rune) bool {
-	return isString(r) || unicode.IsDigit(r)
+	return isIdent(r) || unicode.IsDigit(r)
 }
 
 func isValidNumber(r rune) bool {
 	return unicode.IsDigit(r) ||
 		r == '-' ||
 		r == '.' ||
-		r == 'x'
+		isValidHex(r)
 
 }
 func isValidHex(r rune) bool {
