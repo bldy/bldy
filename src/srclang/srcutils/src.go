@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 
-	"bldy.build/bldy/script/token"
+	"bldy.build/bldy/srclang/token"
 )
 
 /*
