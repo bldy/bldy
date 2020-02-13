@@ -2,6 +2,9 @@
 
 **bldy** is a concurrent build system that runs blazingly fast, incrementally and in parallel.
 
+![Bldy](https://github.com/bldy/bldy/workflows/Bldy/badge.svg?branch=master)
+[![Total alerts](https://img.shields.io/lgtm/alerts/g/bldy/bldy.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/bldy/bldy/alerts/)
+
 ## Documentation
 
 * Mailing Lists:
@@ -14,21 +17,18 @@
 
 ### Requirements
 
-* go (+1.12)
+* go (+1.13)
   * Mac: `brew install golang`
   * ArchLinux: `pacman -S golang`
 
 ### Install:
 
 ```
-go get bldy.build/bldy/src/cmd/bldy
+go get bldy.build/bldy/cmd/bldy
 ```
 
 ## Contributing
-
-See the
-[CONTRIBUTING.md](https://github.com/jennyservices/jenny/blob/master/CONTRIBUTING.md)
-for details.
+[WIP]
 
 ## Maintainers
 
