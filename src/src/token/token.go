@@ -61,6 +61,8 @@ const (
 	DEFINE   // :=
 	ELLIPSIS // ...
 
+	FATARROW // =>
+
 	LPAREN // (
 	LBRACK // [
 	LBRACE // {
@@ -136,6 +138,8 @@ var tokens = [...]string{
 	GEQ:      ">=",
 	DEFINE:   ":=",
 	ELLIPSIS: "...",
+
+	FATARROW: "=>",
 
 	LPAREN: "(",
 	LBRACK: "[",

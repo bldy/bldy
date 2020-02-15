@@ -158,8 +158,16 @@ func lexNumber(l *Lexer) stateFn {
 }
 
 func lexOperator(l *Lexer) stateFn {
-	for isOperator(l.peek()) {
+	start := l.lb.first()
+	if emptyset(start, l.peek()) {
+		l.emit(token.Lookup(string(start)))
 		l.next()
+		return lexOperator
+	}
+	if isWide(start) {
+		for isOperator(l.peek()) {
+			l.next()
+		}
 	}
 	l.emit(token.Lookup(string(l.buffer())))
 	return lexAny
@@ -193,6 +201,23 @@ func lexSpace(l *Lexer) stateFn {
 }
 
 // Helper functions
+func isWide(r rune) bool {
+	return r == '<' || r == '-' || r == '='
+}
+
+func emptyset(a, b rune) bool {
+	for _, s := range [][2]rune{
+		{'<', '>'},
+		{'(', ')'},
+		{'{', '}'},
+		{'[', ']'},
+	} {
+		if s[0] == a && s[1] == b {
+			return true
+		}
+	}
+	return false
+}
 
 // isSpace reports whether r is a space character.
 func isSpace(r rune) bool { return unicode.IsSpace(r) }
@@ -247,5 +272,6 @@ func isOperator(r rune) bool {
 		r == '.' ||
 		r == ',' ||
 		r == '<' ||
+		r == '>' ||
 		r == '!'
 }

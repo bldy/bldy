@@ -22,6 +22,7 @@ type lineBuffer struct {
 func (r *lineBuffer) markStart()     { r.start = r.i }
 func (r *lineBuffer) buffer() []byte { return r.s[r.start:r.i] }
 func (r *lineBuffer) peek() rune     { ch, _ := utf8.DecodeRune(r.s[r.i:]); return ch }
+func (r *lineBuffer) first() rune    { ch, _ := utf8.DecodeRune(r.buffer()); return ch }
 
 func (r *lineBuffer) UnreadRune() error {
 	if r.i <= 0 {

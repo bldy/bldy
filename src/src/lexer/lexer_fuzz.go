@@ -17,6 +17,7 @@ func Fuzz(data []byte) int {
 		if t.Type() == token.ERROR {
 			panic(t)
 		}
+		return int(t.Type())
 	}
 	return 0
 }
