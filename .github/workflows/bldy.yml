@@ -26,53 +26,11 @@ jobs:
         go get -v -t -d ./...
     - name: test
       working-directory: ${{env.working-dir}}      
-      run: go test -v ./...
+      run: go test -race -coverprofile=coverage -covermode=atomic -v ./...
 
-  fuzz:
-    name: Fuzz
-    runs-on: ubuntu-latest
-    strategy:
-      matrix: 
-        target: [lexer, parser]
-        fuzzer: [clang]
-    env:
-      working-dir: ${{github.workspace}}/src/src/${{matrix.target}}
-      GO111MODULE: on
-    steps:
-
-    - name: Set up Go 1.13
-      uses: actions/setup-go@v1
+    - name: Codecov
+      uses: codecov/codecov-action@v1.0.5
       with:
-        go-version: 1.13
-      id: go
-
-    - name: Check out code into the Go module directory
-      uses: actions/checkout@v2
-
-    - name: Install dependencies     
-      run: |
-        go install \
-          github.com/dvyukov/go-fuzz/go-fuzz \
-          github.com/dvyukov/go-fuzz/go-fuzz-build \
-          github.com/fuzzitdev/fuzzit/v2
-    - name: Build ${{matrix.target}} for ${{matrix.fuzzer}}
-      working-directory: ${{env.working-dir}}
-      env:
-        FUZZER: ${{matrix.target}} 
-      run: |
-        if [ $FUZZER = "gofuzz" ]; then
-           `go env GOPATH`/bin/go-fuzz-build -o ${{env.working-dir}}/${{matrix.target}}.zip .
-        else
-          `go env GOPATH`/bin/go-fuzz-build -libfuzzer -o ${{matrix.target}}.a .
-          clang -fsanitize=fuzzer ${{matrix.target}}.a -o ${{matrix.target}}
-        fi
-    - name: Upload fuzz-${{matrix.target}} 
-      env:
-        FUZZER: ${{matrix.fuzzer}}
-        FUZZIT_API_KEY: ${{secrets.fuzzitApiKey}}
-      run: |
-        if [ $FUZZER = "gofuzz" ]; then
-          `go env GOPATH`/bin/fuzzit create job --engine go-fuzz --type fuzzing bldy-gh/${{matrix.target}} ${{env.working-dir}}/${{matrix.target}}.zip
-        else
-          `go env GOPATH`/bin/fuzzit create job --type fuzzing bldy-gh/${{matrix.target}} ${{env.working-dir}}/${{matrix.target}}
-        fi
+        token: ${{ secrets.codecovkey }}
+        file: ${{env.working-dir}}/coverage
+        fail_ci_if_error: false

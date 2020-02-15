@@ -5,6 +5,8 @@
 ![Bldy](https://github.com/bldy/bldy/workflows/Bldy/badge.svg)
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/bldy/bldy.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/bldy/bldy/alerts/)
 [![fuzzit](https://app.fuzzit.dev/badge?org_id=bldy-gh)](https://app.fuzzit.dev/orgs/bldy-gh/dashboard)
+[![codecov](https://codecov.io/gh/bldy/bldy/branch/master/graph/badge.svg)](https://codecov.io/gh/bldy/bldy)
+
 ## Documentation
 
 * Mailing Lists:
