@@ -1,0 +1,8 @@
+panic: runtime error: invalid memory address or nil pointer dereference
+bufio.(*Reader).fill
+bufio.(*Reader).ReadSlice
+bufio.(*Reader).ReadLine
+bldy.build/bldy/src/lexer.(*lineBuffer).ReadRune
+bldy.build/bldy/src/lexer.(*Lexer).next
+bldy.build/bldy/src/lexer.lexAny
+bldy.build/bldy/src/lexer.(*Lexer).run

@@ -1,0 +1,33 @@
+panic: runtime error: invalid memory address or nil pointer dereference
+[signal SIGSEGV: segmentation violation code=0x1 addr=0x18 pc=0x4b754b]
+
+goroutine 6 [running]:
+bufio.(*Reader).fill(0xc0000501e0)
+	/usr/lib/go/src/bufio/bufio.go:100 +0x18b
+bufio.(*Reader).ReadSlice(0xc0000501e0, 0xa, 0x0, 0x0, 0x0, 0x0, 0x0)
+	/usr/lib/go/src/bufio/bufio.go:359 +0x8e
+bufio.(*Reader).ReadLine(0xc0000501e0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0)
+	/usr/lib/go/src/bufio/bufio.go:388 +0x5d
+bldy.build/bldy/src/lexer.(*lineBuffer).ReadRune(0xc000050240, 0x0, 0x0, 0x0, 0x0)
+	/home/sevki/src/bldy/src/src/lexer/line_buffer.go:46 +0xc2
+bldy.build/bldy/src/lexer.(*Lexer).next(0xc00008c000, 0x0)
+	/home/sevki/src/bldy/src/src/lexer/lexer.go:88 +0x4b
+bldy.build/bldy/src/lexer.lexAny(0xc00008c000, 0x0)
+	/home/sevki/src/bldy/src/src/lexer/lexer.go:114 +0x69
+bldy.build/bldy/src/lexer.(*Lexer).run(0xc00008c000)
+	/home/sevki/src/bldy/src/src/lexer/lexer.go:64 +0xbc
+created by bldy.build/bldy/src/lexer.New
+	/home/sevki/src/bldy/src/src/lexer/lexer.go:57 +0x292
+
+goroutine 1 [chan receive]:
+bldy.build/bldy/src/parser.NewQueue(0xc00005c060, 0x0)
+	/home/sevki/src/bldy/src/src/parser/token_queue.go:50 +0x181
+bldy.build/bldy/src/parser.New(0x4f20e0, 0xc00000e028, 0x5e483133)
+	/home/sevki/src/bldy/src/src/parser/parser.go:53 +0xb8
+bldy.build/bldy/src/parser.Fuzz(0x7fc7842eb000, 0x0, 0x0, 0x4)
+	/home/sevki/src/bldy/src/src/parser/parser_fuzz.go:18 +0xcc
+go-fuzz-dep.Main(0xc000076f48, 0x1, 0x1)
+	go-fuzz-dep/main.go:36 +0x1ad
+main.main()
+	bldy.build/bldy/src/parser/go.fuzz.main/main.go:15 +0x52
+exit status 2

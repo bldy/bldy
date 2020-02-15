@@ -22,8 +22,8 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		l := lexer.New(file, f)
-		l.Debug()
+		l := lexer.New(file, f, lexer.Verbose)
+
 		buf := &bytes.Buffer{}
 		if err != nil {
 			panic(err)

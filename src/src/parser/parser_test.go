@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"bldy.build/bldy/src/ast"
+	"bldy.build/bldy/src/token"
 )
 
 func TestNewWithReader(t *testing.T) {
@@ -18,6 +19,7 @@ func TestNewWithReader(t *testing.T) {
 func TestNewWithFileName(t *testing.T) {
 	_ = New("../testdata/assignment.src")
 }
+
 func TestNewWithInvalidFileName(t *testing.T) {
 	defer func() {
 		if err := recover(); err == nil {
@@ -47,6 +49,7 @@ func TestParseFile(t *testing.T) {
 		return
 	}
 }
+
 func TestFuncWithParams(t *testing.T) {
 	p := New("../testdata/funcparams.src")
 	file, ok := p.Parse().(*ast.File)
@@ -64,4 +67,16 @@ func TestFuncWithParams(t *testing.T) {
 		t.Fail()
 		return
 	}
+}
+
+func TestMustGet(t *testing.T) {
+	defer func() {
+		if err := recover(); err == nil {
+			t.Fail()
+			return
+		}
+	}()
+	p := New("../testdata/funcparams.src")
+	p.mustGet(token.FLOAT)
+	p.Parse()
 }

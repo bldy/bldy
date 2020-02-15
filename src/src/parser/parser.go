@@ -13,6 +13,7 @@ import (
 	"bldy.build/bldy/src/token"
 )
 
+// Parser is responsible for parsing a single file.
 type Parser struct {
 	l     *lexer.Lexer
 	state stateFn
@@ -25,6 +26,8 @@ type Parser struct {
 }
 type stateFn func(*Parser) stateFn
 
+// File is an interface that implements
+// io.ReadCloser
 type File interface {
 	io.ReadCloser
 	Name() string
@@ -54,6 +57,7 @@ func New(src interface{}) *Parser {
 	return p
 }
 
+// Parse parses the file and returns ast.File
 func (p *Parser) Parse() ast.Node {
 	p.run()
 	return p.f
@@ -82,6 +86,7 @@ func (p *Parser) mustGet(types ...token.Type) {
 		panic(fmt.Sprintf("%v\n%s:%d <%s>\n", err, file, line, call))
 	}
 }
+
 func (p *Parser) expect(types ...token.Type) error {
 	t := p.peek()
 	for _, typ := range types {
@@ -113,8 +118,6 @@ func parseDeclerations(p *Parser) stateFn {
 	switch p.peek().Type() {
 	case token.FUNC:
 		return parseFunc
-	case token.LET:
-		return parseLet
 	default:
 		return nil
 	}
@@ -161,9 +164,5 @@ func parseFuncParams(p *Parser) stateFn {
 			namelist = append(namelist, t)
 		}
 	}
-	return nil
-}
-
-func parseLet(p *Parser) stateFn {
 	return nil
 }

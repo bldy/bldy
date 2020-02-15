@@ -33,8 +33,12 @@ type Lexer struct {
 	lastToken token.Token
 }
 
+type Option func(*Lexer)
+
+func Verbose(l *Lexer) { l.debug = true }
+
 // New returns a new src lexer
-func New(name string, r io.ReadCloser) *Lexer {
+func New(name string, r io.ReadCloser, options ...Option) *Lexer {
 	l := &Lexer{
 		r:    bufio.NewReader(r),
 		c:    r,
@@ -46,6 +50,9 @@ func New(name string, r io.ReadCloser) *Lexer {
 		},
 		Tokens: make(chan *token.Token),
 		debug:  false,
+	}
+	for _, o := range options {
+		o(l)
 	}
 	go l.run()
 	return l
@@ -91,13 +98,6 @@ func (l *Lexer) next() rune {
 
 // ignore skips over the pending input before this point.
 func (l *Lexer) ignore() { l.lb.markStart() }
-
-// backup steps back one rune. Can only be called once per call of next.
-func (l *Lexer) backup() {
-	if err := l.lb.UnreadRune(); err != nil {
-		panic(err)
-	}
-}
 
 // peek returns but does not consume the next rune in the input.
 func (l *Lexer) peek() rune { return l.lb.peek() }
@@ -157,25 +157,19 @@ func lexNumber(l *Lexer) stateFn {
 	return lexAny
 }
 
-func lexType(l *Lexer) stateFn {
-	l.emit(token.COLON)
-	return lexAny
-}
-
 func lexOperator(l *Lexer) stateFn {
-	for {
-		if typ := token.Lookup(string(l.buffer())); typ != token.ERROR {
-			l.emit(typ)
-			return lexAny
-		}
-
-		if !isSpace(l.peek()) && !isEndOfLine(l.peek()) {
+	start := l.lb.first()
+	if emptyset(start, l.peek()) {
+		l.emit(token.Lookup(string(start)))
+		l.next()
+		return lexOperator
+	}
+	if isWide(start) {
+		for isOperator(l.peek()) {
 			l.next()
-		} else {
-			break
 		}
 	}
-
+	l.emit(token.Lookup(string(l.buffer())))
 	return lexAny
 }
 
@@ -207,6 +201,23 @@ func lexSpace(l *Lexer) stateFn {
 }
 
 // Helper functions
+func isWide(r rune) bool {
+	return r == '<' || r == '-' || r == '='
+}
+
+func emptyset(a, b rune) bool {
+	for _, s := range [][2]rune{
+		{'<', '>'},
+		{'(', ')'},
+		{'{', '}'},
+		{'[', ']'},
+	} {
+		if s[0] == a && s[1] == b {
+			return true
+		}
+	}
+	return false
+}
 
 // isSpace reports whether r is a space character.
 func isSpace(r rune) bool { return unicode.IsSpace(r) }
@@ -249,4 +260,18 @@ func isValidHex(r rune) bool {
 		r == 'E' ||
 		r == 'f' ||
 		r == 'F'
+}
+
+func isOperator(r rune) bool {
+	return r == '{' ||
+		r == '}' ||
+		r == '(' ||
+		r == ')' ||
+		r == '=' ||
+		r == ':' ||
+		r == '.' ||
+		r == ',' ||
+		r == '<' ||
+		r == '>' ||
+		r == '!'
 }

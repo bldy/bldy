@@ -16,6 +16,9 @@ func (*fuzzFile) Name() string { return "fuzz.src" }
 func Fuzz(data []byte) int {
 	buf := bytes.NewBuffer(data)
 	p := New(&fuzzFile{buf})
-	p.Parse()
+	f := p.Parse()
+	if f == nil {
+		panic("")
+	}
 	return 0
 }
