@@ -33,8 +33,12 @@ type Lexer struct {
 	lastToken token.Token
 }
 
+type Option func(*Lexer)
+
+func Verbose(l *Lexer) { l.debug = true }
+
 // New returns a new src lexer
-func New(name string, r io.ReadCloser) *Lexer {
+func New(name string, r io.ReadCloser, options ...Option) *Lexer {
 	l := &Lexer{
 		r:    bufio.NewReader(r),
 		c:    r,
@@ -46,6 +50,9 @@ func New(name string, r io.ReadCloser) *Lexer {
 		},
 		Tokens: make(chan *token.Token),
 		debug:  false,
+	}
+	for _, o := range options {
+		o(l)
 	}
 	go l.run()
 	return l

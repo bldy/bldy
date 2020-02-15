@@ -22,8 +22,8 @@ func TestLex(t *testing.T) {
 				t.Log(err)
 				return
 			}
-			l := New(f.Name(), f)
-			l.Debug()
+			l := New(f.Name(), f, Verbose)
+
 			dat, err := os.Open(strings.Replace(file, filepath.Ext(file), ".gold", 1))
 			if err != nil {
 				t.Fail()
