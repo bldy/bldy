@@ -92,13 +92,6 @@ func (l *Lexer) next() rune {
 // ignore skips over the pending input before this point.
 func (l *Lexer) ignore() { l.lb.markStart() }
 
-// backup steps back one rune. Can only be called once per call of next.
-func (l *Lexer) backup() {
-	if err := l.lb.UnreadRune(); err != nil {
-		panic(err)
-	}
-}
-
 // peek returns but does not consume the next rune in the input.
 func (l *Lexer) peek() rune { return l.lb.peek() }
 
@@ -157,18 +150,12 @@ func lexNumber(l *Lexer) stateFn {
 	return lexAny
 }
 
-func lexType(l *Lexer) stateFn {
-	l.emit(token.COLON)
-	return lexAny
-}
-
 func lexOperator(l *Lexer) stateFn {
 	for {
 		if typ := token.Lookup(string(l.buffer())); typ != token.ERROR {
 			l.emit(typ)
 			return lexAny
 		}
-
 		if !isSpace(l.peek()) && !isEndOfLine(l.peek()) {
 			l.next()
 		} else {

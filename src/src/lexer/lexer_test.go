@@ -23,7 +23,7 @@ func TestLex(t *testing.T) {
 				return
 			}
 			l := New(f.Name(), f)
-			//	l.Debug()
+			l.Debug()
 			dat, err := os.Open(strings.Replace(file, filepath.Ext(file), ".gold", 1))
 			if err != nil {
 				t.Fail()
