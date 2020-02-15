@@ -1,0 +1,15 @@
+func C() {}
+func compare(s string) {}
+func A(s string) (int) {}
+a = func() () {}
+func y() () {
+    func() () {
+
+    }()
+}
+func t() () {
+     a =func(s string) (){
+
+     }
+     a()
+}

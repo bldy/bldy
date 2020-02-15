@@ -16,6 +16,7 @@ const (
 	NEWLINE
 	ERROR
 
+	// Operators
 	ADD // +
 	SUB // -
 	MUL // *
@@ -83,6 +84,8 @@ const (
 	INT
 	FLOAT
 	HEX
+	FUNC // func
+	keywords_end
 )
 
 var tokens = [...]string{
@@ -149,9 +152,12 @@ var tokens = [...]string{
 	TYPE:   "type",
 	MODULE: "module",
 	LET:    "let",
+	FUNC:   "func",
 }
 var keywords map[string]Type
 
+func Begin() Type { return EOF }
+func End() Type   { return keywords_end }
 func caller() (call string, file string, line int) {
 	var caller uintptr
 	caller, file, line, _ = runtime.Caller(2)
@@ -162,7 +168,7 @@ func caller() (call string, file string, line int) {
 
 func init() {
 	keywords = make(map[string]Type)
-	for i := ADD; i <= LET; i++ {
+	for i := ADD; i < keywords_end; i++ {
 		keywords[tokens[i]] = i
 	}
 }
@@ -234,7 +240,7 @@ type Token struct {
 	Position
 }
 
-func (t *Token) Kind() Type     { return t.t }
+func (t *Token) Type() Type     { return t.t }
 func (t *Token) Data() []byte   { return t.data }
 func (t *Token) Len() int       { return len(t.data) }
 func (t *Token) Offset() uint64 { return t.offset }
@@ -243,7 +249,7 @@ func (t *Token) Is(a *Token) error {
 	if a == nil {
 		panic("a cannot be nil")
 	}
-	if t.Kind() != a.Kind() {
+	if t.Type() != a.Type() {
 		return fmt.Errorf("%s is not the same as %s", t.t, a.t)
 	}
 	if t.Offset() != a.Offset() {

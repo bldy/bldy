@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 
-	"bldy.build/bldy/srclang/token"
+	"bldy.build/bldy/src/token"
 )
 
 /*
@@ -24,7 +24,7 @@ type Encoder struct{ w io.Writer }
 
 func Encode(t *token.Token) string {
 	d := t.Data()
-	return fmt.Sprintf(_fmt+"\n", t.Line, t.Column, t.Offset(), len(d), t.Kind(), d)
+	return fmt.Sprintf(_fmt+"\n", t.Line, t.Column, t.Offset(), len(d), t.Type(), d)
 }
 
 func (e *Encoder) Encode(t *token.Token) { fmt.Fprint(e.w, Encode(t)) }
@@ -57,7 +57,7 @@ func (d *Decoder) Decode() (*token.Token, error) {
 	}
 	// this is hackyyy but it's a test util so doesn't matter.
 	typ := token.ERROR
-	for i := token.EOF; i <= token.HEX; i++ {
+	for i := token.Begin(); i <= token.End(); i++ {
 		if i.String() == xtyp {
 			typ = i
 		}

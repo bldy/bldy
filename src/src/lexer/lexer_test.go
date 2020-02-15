@@ -6,11 +6,11 @@ import (
 	"strings"
 	"testing"
 
-	"bldy.build/bldy/srclang/srcutils"
+	"bldy.build/bldy/src/srcutils"
 )
 
 func TestLex(t *testing.T) {
-	files, err := filepath.Glob("../testdata/*.bldy")
+	files, err := filepath.Glob("../testdata/*.src")
 	if err != nil {
 		panic(err)
 	}

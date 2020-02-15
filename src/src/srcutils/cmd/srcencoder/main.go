@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"bldy.build/bldy/srclang/lexer"
-	"bldy.build/bldy/srclang/srcutils"
+	"bldy.build/bldy/src/lexer"
+	"bldy.build/bldy/src/srcutils"
 )
 
 func main() {
@@ -33,7 +33,7 @@ func main() {
 			enc.Encode(tok)
 		}
 		ioutil.WriteFile(
-			strings.Replace(file, filepath.Ext(file), ".dat", 1),
+			strings.Replace(file, filepath.Ext(file), ".gold", 1),
 			buf.Bytes(),
 			0755,
 		)
