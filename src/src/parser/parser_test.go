@@ -15,9 +15,18 @@ func TestNewWithReader(t *testing.T) {
 	}
 	_ = New(f)
 }
-
 func TestNewWithFileName(t *testing.T) {
 	_ = New("../testdata/assignment.src")
+}
+func TestNewWithInvalidFileName(t *testing.T) {
+	defer func() {
+		if err := recover(); err == nil {
+			t.Fail()
+			return
+		}
+	}()
+	_ = New("../testdata.src")
+
 }
 
 func TestParseFile(t *testing.T) {
