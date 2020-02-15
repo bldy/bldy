@@ -25,11 +25,17 @@ type Parser struct {
 }
 type stateFn func(*Parser) stateFn
 
+type File interface {
+	io.ReadCloser
+	Name() string
+}
+
+// New returns a new Parser
 func New(src interface{}) *Parser {
 	var r io.ReadCloser
 	var name string
 	switch s := src.(type) {
-	case *os.File:
+	case File:
 		r = s
 		name = s.Name()
 	case string:
