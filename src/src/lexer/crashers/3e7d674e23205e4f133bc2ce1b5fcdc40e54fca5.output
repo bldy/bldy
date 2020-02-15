@@ -1,0 +1,55 @@
+program hanged (timeout 10 seconds)
+
+SIGABRT: abort
+PC=0x48022c m=0 sigcode=0
+
+goroutine 16 [running]:
+racecalladdr()
+	runtime/race_amd64.s:160 +0x3c fp=0xc000045cb0 sp=0xc000045ca8 pc=0x48022c
+bufio.(*Reader).ReadSlice(0xc00005cde0, 0xc00008000a, 0xc000080180, 0x0, 0x1000, 0x5e2ba0, 0xc0000800d0)
+	/usr/lib/go/src/bufio/bufio.go:366 +0xb9e fp=0xc000045d78 sp=0xc000045cb0 pc=0x4bd8fe
+bufio.(*Reader).ReadLine(0xc00005cde0, 0x0, 0x0, 0x0, 0x0, 0x5e2ba0, 0xc0000800d0)
+	/usr/lib/go/src/bufio/bufio.go:388 +0xdd fp=0xc000045e00 sp=0xc000045d78 pc=0x4bdedd
+bldy.build/bldy/src/lexer.(*lineBuffer).ReadRune(0xc00005ce40, 0x0, 0x0, 0x0, 0x0)
+	/home/sevki/src/bldy/src/src/lexer/line_buffer.go:46 +0x320 fp=0xc000045ea0 sp=0xc000045e00 pc=0x585080
+bldy.build/bldy/src/lexer.(*Lexer).next(0xc0000b4840, 0x0)
+	/home/sevki/src/bldy/src/src/lexer/lexer.go:88 +0xd3 fp=0xc000045f18 sp=0xc000045ea0 pc=0x57fdf3
+bldy.build/bldy/src/lexer.lexString(0xc0000b4840, 0x5c80b0)
+	/home/sevki/src/bldy/src/src/lexer/lexer.go:140 +0x501 fp=0xc000045f90 sp=0xc000045f18 pc=0x581781
+bldy.build/bldy/src/lexer.(*Lexer).run(0xc0000b4840)
+	/home/sevki/src/bldy/src/src/lexer/lexer.go:64 +0x1a9 fp=0xc000045fd8 sp=0xc000045f90 pc=0x57efb9
+runtime.goexit()
+	runtime/asm_amd64.s:1357 +0x1 fp=0xc000045fe0 sp=0xc000045fd8 pc=0x47e871
+created by bldy.build/bldy/src/lexer.New
+	/home/sevki/src/bldy/src/src/lexer/lexer.go:57 +0x6fe
+
+goroutine 1 [chan receive]:
+bldy.build/bldy/src/lexer.Fuzz(0x7ffb1a001000, 0x20, 0x20, 0x3)
+	/home/sevki/src/bldy/src/src/lexer/lexer_fuzz.go:16 +0x388
+go-fuzz-dep.Main(0xc000040f48, 0x1, 0x1)
+	go-fuzz-dep/main.go:36 +0x282
+main.main()
+	bldy.build/bldy/src/lexer/go.fuzz.main/main.go:15 +0x60
+
+rax    0x41aa70
+rbx    0x0
+rcx    0x7ffb19ff73ef
+rdx    0x4bd8fe
+rdi    0x12ad278
+rsi    0x7ffb19ff73ef
+rbp    0xc000045d68
+rsp    0xc000045ca8
+r8     0x480000031edc41
+r9     0x30
+r10    0x6c8000
+r11    0x57e1d8
+r12    0xc000045ca8
+r13    0x6c8560
+r14    0xc000001500
+r15    0x57e1a1
+rip    0x48022c
+rflags 0x206
+cs     0x33
+fs     0x0
+gs     0x0
+exit status 2

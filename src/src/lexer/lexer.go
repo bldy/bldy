@@ -158,18 +158,10 @@ func lexNumber(l *Lexer) stateFn {
 }
 
 func lexOperator(l *Lexer) stateFn {
-	for {
-		if typ := token.Lookup(string(l.buffer())); typ != token.ERROR {
-			l.emit(typ)
-			return lexAny
-		}
-		if !isSpace(l.peek()) && !isEndOfLine(l.peek()) {
-			l.next()
-		} else {
-			break
-		}
+	for isOperator(l.peek()) {
+		l.next()
 	}
-
+	l.emit(token.Lookup(string(l.buffer())))
 	return lexAny
 }
 
@@ -243,4 +235,17 @@ func isValidHex(r rune) bool {
 		r == 'E' ||
 		r == 'f' ||
 		r == 'F'
+}
+
+func isOperator(r rune) bool {
+	return r == '{' ||
+		r == '}' ||
+		r == '(' ||
+		r == ')' ||
+		r == '=' ||
+		r == ':' ||
+		r == '.' ||
+		r == ',' ||
+		r == '<' ||
+		r == '!'
 }
