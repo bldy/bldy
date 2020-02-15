@@ -41,7 +41,11 @@ jobs:
     strategy:
       matrix: 
         target: [lexer, parser]
+<<<<<<< HEAD
         fuzzer: [clang]
+=======
+        fuzzer: [gofuzz, clang]
+>>>>>>> 7bdb5d3... ci: add fuzzing targets
     env:
       working-dir: ${{github.workspace}}/src/src/${{matrix.target}}
       GO111MODULE: on
