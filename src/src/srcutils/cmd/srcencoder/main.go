@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"bldy.build/bldy/srclang/lexer"
-	"bldy.build/bldy/srclang/srcutils"
+	"bldy.build/bldy/src/lexer"
+	"bldy.build/bldy/src/srcutils"
 )
 
 func main() {

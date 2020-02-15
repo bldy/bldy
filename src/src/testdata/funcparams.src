@@ -1,0 +1,5 @@
+module test
+
+func Bldy(compiler, linker string, debug bool) {
+
+}

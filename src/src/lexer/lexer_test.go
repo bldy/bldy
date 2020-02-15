@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"bldy.build/bldy/srclang/srcutils"
+	"bldy.build/bldy/src/srcutils"
 )
 
 func TestLex(t *testing.T) {

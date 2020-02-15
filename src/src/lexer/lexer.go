@@ -8,7 +8,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"bldy.build/bldy/srclang/token"
+	"bldy.build/bldy/src/token"
 )
 
 const eof = -1
@@ -33,7 +33,7 @@ type Lexer struct {
 	lastToken token.Token
 }
 
-// New returns a new srclang lexer
+// New returns a new src lexer
 func New(name string, r io.ReadCloser) *Lexer {
 	l := &Lexer{
 		r:    bufio.NewReader(r),
@@ -125,7 +125,7 @@ func lexAny(l *Lexer) stateFn {
 			switch r {
 			case '"':
 				return lexString
-			case '{', '}', '(', ')', '=', ':':
+			case '{', '}', '(', ')', '=', ':', '.', ',', '!':
 				return lexOperator
 			}
 			return nil
